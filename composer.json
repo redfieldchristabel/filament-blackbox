@@ -1,30 +1,28 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "redfieldchristabel/filament-blackbox",
+    "description": "A professional-grade auditing UI for Filament PHP. Transform raw laravel-auditing data into a powerful, centralized 'Blackbox' flight recorder with beautiful diffs, relationship-aware timelines, and advanced filtering.",
     "keywords": [
-        ":vendor_name",
+        "redfieldchristabel",
         "laravel",
         "filamentphp",
-        ":package_slug"
+        "filament-blackbox"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/redfieldchristabel/filament-blackbox",
     "support": {
-        "issues": "https://github.com/:vendor_slug/:package_slug/issues",
-        "source": "https://github.com/:vendor_slug/:package_slug"
+        "issues": "https://github.com/redfieldchristabel/filament-blackbox/issues",
+        "source": "https://github.com/redfieldchristabel/filament-blackbox"
     },
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
+            "name": "redfieldchristabel",
+            "email": "redfieldchristabel@gmail.com",
             "role": "Developer"
         }
     ],
     "require": {
         "php": "^8.2",
         "filament/filament": "^4.0",
-        "filament/forms": "^4.0",
-        "filament/tables": "^4.0",
         "spatie/laravel-package-tools": "^1.15.0"
     },
     "require-dev": {
@@ -44,13 +42,13 @@
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "Blackbox\\FilamentBlackbox\\": "src/",
+            "Blackbox\\FilamentBlackbox\\Database\\Factories\\": "database/factories/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/"
+            "Blackbox\\FilamentBlackbox\\Tests\\": "tests/"
         }
     },
     "scripts": {
@@ -65,10 +63,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "Blackbox\\FilamentBlackbox\\FilamentBlackboxServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "FilamentBlackbox": "Blackbox\\FilamentBlackbox\\Facades\\FilamentBlackbox"
             }
         }
     },
