@@ -1,21 +1,21 @@
 <?php
 
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Gate;
 
-if (!function_exists('blackboxCheck')) {
+if (! function_exists('blackboxCheck')) {
     /**
      * Safely checks permissions by ensuring a policy exists before calling Gate::check.
      * Mimics the signature of Illuminate\Support\Facades\Gate::check().
      */
-    function blackboxCheck(iterable|string $abilities, mixed $arguments = []): bool
+    function blackboxCheck(iterable | string $abilities, mixed $arguments = []): bool
     {
 
         // Extract the model from arguments (standard Gate behavior)
         // If $arguments is an array, the model is usually the first element.
         $model = is_array($arguments) ? Arr::first($arguments) : $arguments;
 
-        if (!$model) {
+        if (! $model) {
             return false;
         }
 
@@ -23,7 +23,7 @@ if (!function_exists('blackboxCheck')) {
         $policy = Gate::getPolicyFor($model);
 
         // If no policy is registered for this model, we fail safe
-        if (!$policy) {
+        if (! $policy) {
             return true;
         }
 
