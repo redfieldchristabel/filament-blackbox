@@ -1,1 +1,35 @@
-@import '../../vendor/filament/filament/resources/css/theme.css';
+/* resources/css/index.css */
+
+@import "tailwindcss";
+
+/* Forces Tailwind to use the .dark class instead of system media queries */
+@variant dark (&:where(.dark, .dark *));
+
+/* 
+   Tell Tailwind v4 to scan these paths for classes.
+   Paths are RELATIVE TO THIS CSS FILE (resources/css/index.css)
+   So .. → goes up to resources/, then ../views/ → resources/views/
+*/
+@source "../views/**/*.blade.php";
+
+/* If you later add more Blade files in subfolders, this glob already covers them */
+@source "../views/**/**/*.blade.php";   /* optional — usually not needed */
+
+/* If you have any PHP files with inline classes (e.g. in Filament resources, pages, widgets) */
+@source "../views/**/*.php";
+
+/* Optional: if you have JS/TS files in resources/js/ with Tailwind classes (rare in plugins) */
+@source "../js/**/*.{js,ts,jsx,tsx}";
+
+/* Your custom styles can go here after the import */
+@layer base {
+  /* ... */
+}
+
+@layer components {
+  /* ... */
+}
+
+@layer utilities {
+  /* ... */
+}

@@ -47,6 +47,16 @@ compile({
     ...defaultOptions,
     entryPoints: ['./resources/js/index.js'],
     outfile: './resources/dist/filament-blackbox.js',
-}).then(() => {
-    console.log(`Build completed for filament-blackbox.js`)
 })
+    .then(() => {
+        console.log(`Build completed for filament-blackbox.js`)
+    })
+
+// // At the bottom of your build.js
+// compile({
+//     ...defaultOptions,
+//     entryPoints: ['./resources/css/index.css'],
+//     outfile: './resources/dist/filament-blackbox.css',
+// }).then(() => {
+//     console.log(`Build completed for filament-blackbox.css`)
+// })

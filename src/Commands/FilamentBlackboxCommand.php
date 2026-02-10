@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 
 class FilamentBlackboxCommand extends Command
 {
-    public $signature = 'filament-blackbox';
+    public $signature = 'blackbox:test';
 
     public $description = 'My command';
 

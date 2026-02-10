@@ -58,7 +58,9 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         }
     }
 
-    public function packageRegistered(): void {}
+    public function packageRegistered(): void
+    {
+    }
 
     public function packageBooted(): void
     {
@@ -101,8 +103,8 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
     {
         return [
             // AlpineComponent::make('filament-blackbox', __DIR__ . '/../resources/dist/components/filament-blackbox.js'),
-            // Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css'),
-            // Js::make('filament-blackbox-scripts', __DIR__ . '/../resources/dist/filament-blackbox.js'),
+            Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css'),
+            Js::make('filament-blackbox-scripts', __DIR__ . '/../resources/dist/filament-blackbox.js'),
         ];
     }
 

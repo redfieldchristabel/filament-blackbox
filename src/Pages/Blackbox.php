@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace Blackbox\FilamentBlackbox\Pages;
 
 use Blackbox\FilamentBlackbox\FilamentBlackbox;
 use Filament\Actions\Contracts\HasActions;
@@ -12,6 +12,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Livewire\WithPagination;
 
 
@@ -24,7 +25,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
     protected static ?string $title = 'Black Box';
 
     // protected string $view = 'filament.pages.global-audit-log';
-    protected static string $view = 'filament-blackbox::pages.blackbox';
+    protected string $view = 'filament-blackbox::pages.blackbox';
 
     protected static ?int $navigationSort = 100;
 

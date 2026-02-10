@@ -2,6 +2,7 @@
 
 namespace Blackbox\FilamentBlackbox;
 
+use Blackbox\FilamentBlackbox\Pages\Blackbox;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
@@ -14,7 +15,9 @@ class FilamentBlackboxPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        //
+        $panel->pages([
+            Blackbox::class
+        ]);
     }
 
     public function boot(Panel $panel): void

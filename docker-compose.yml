@@ -10,7 +10,16 @@ services:
     tty: true
     stdin_open: true
     entrypoint: bash
-    command: ["-c", "while true; do echo hello; sleep infinity; done"]
+    command: [ "-c", "while true; do echo hello; sleep infinity; done" ]
     volumes:
       - ./:/var/www
       - ./docker/php/file.ini:/usr/local/etc/php/conf.d/file.ini
+
+  node:
+    image: node:22
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./node_modules:/app/node_modules
+    command: [ "sleep", "infinity" ]
