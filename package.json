@@ -2,11 +2,19 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "node bin/build.js --dev",
-        "build": "node bin/build.js"
+        "dev": "vite",
+        "build": "vite build"
     },
     "devDependencies": {
+        "autoprefixer": "^10.4.24",
         "esbuild": "^0.25.5",
-        "prettier": "^3.5.3"
+        "laravel-vite-plugin": "^2.1.0",
+        "postcss": "^8.5.6",
+        "prettier": "^3.5.3",
+        "tailwindcss": "^4.1.18",
+        "vite": "^7.3.1"
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "^4.1.18"
     }
 }

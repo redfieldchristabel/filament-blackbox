@@ -1,0 +1,2 @@
+#!/bin/bash
+docker compose exec app ./vendor/bin/phpstan --memory-limit=1G $* 

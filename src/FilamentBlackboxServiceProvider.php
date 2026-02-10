@@ -1,7 +1,9 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Blackbox\FilamentBlackbox;
 
+use Blackbox\FilamentBlackbox\Commands\FilamentBlackboxCommand;
+use Blackbox\FilamentBlackbox\Testing\TestsFilamentBlackbox;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
@@ -10,17 +12,16 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
 use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
-use VendorName\Skeleton\Commands\SkeletonCommand;
-use VendorName\Skeleton\Testing\TestsSkeleton;
 
-class SkeletonServiceProvider extends PackageServiceProvider
+class FilamentBlackboxServiceProvider extends PackageServiceProvider
 {
-    public static string $name = 'skeleton';
+    public static string $name = 'filament-blackbox';
 
-    public static string $viewNamespace = 'skeleton';
+    public static string $viewNamespace = 'filament-blackbox';
 
     public function configurePackage(Package $package): void
     {
@@ -36,29 +37,41 @@ class SkeletonServiceProvider extends PackageServiceProvider
                     ->publishConfigFile()
                     ->publishMigrations()
                     ->askToRunMigrations()
-                    ->askToStarRepoOnGitHub(':vendor_slug/:package_slug');
+                    ->askToStarRepoOnGitHub('redfieldchristabel/filament-blackbox');
             });
 
         $configFileName = $package->shortName();
 
-        if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
-            $package->hasConfigFile();
-        }
+        $package->hasConfigFile('blackbox');
+        // if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
+        //     $package->hasConfigFile();
+        // }
 
-        if (file_exists($package->basePath('/../database/migrations'))) {
-            $package->hasMigrations($this->getMigrations());
-        }
+        // if (file_exists($package->basePath('/../database/migrations'))) {
+        //     $package->hasMigrations($this->getMigrations());
+        // }
 
-        if (file_exists($package->basePath('/../resources/lang'))) {
-            $package->hasTranslations();
-        }
+        // if (file_exists($package->basePath('/../resources/lang'))) {
+        //     $package->hasTranslations();
+        // }
 
         if (file_exists($package->basePath('/../resources/views'))) {
             $package->hasViews(static::$viewNamespace);
         }
+
+        $helpers = $this->packagePath('src/helpers.php');
+
+        if (file_exists($helpers)) {
+            require_once $helpers;
+        }
     }
 
     public function packageRegistered(): void {}
+
+    protected function packagePath(string $path): string
+    {
+        return __DIR__ . '/../' . $path;
+    }
 
     public function packageBooted(): void
     {
@@ -80,18 +93,30 @@ class SkeletonServiceProvider extends PackageServiceProvider
         if (app()->runningInConsole()) {
             foreach (app(Filesystem::class)->files(__DIR__ . '/../stubs/') as $file) {
                 $this->publishes([
-                    $file->getRealPath() => base_path("stubs/skeleton/{$file->getFilename()}"),
-                ], 'skeleton-stubs');
+                    $file->getRealPath() => base_path("stubs/filament-blackbox/{$file->getFilename()}"),
+                ], 'filament-blackbox-stubs');
             }
         }
 
+        // // Register Livewire Components
+        // Livewire::addComponent(
+        //     name: 'audit-item',
+        //     viewPath: resource_path(__DIR__ . '/../resources/views/components/⚡audit-item.blade.php')
+        // );
+
+        Livewire::addNamespace(
+            namespace: 'blackbox',
+            viewPath: $this->packagePath('resources/views/components')
+        );
+
         // Testing
-        Testable::mixin(new TestsSkeleton);
+        Testable::mixin(new TestsFilamentBlackbox);
+
     }
 
     protected function getAssetPackageName(): ?string
     {
-        return ':vendor_slug/:package_slug';
+        return 'redfieldchristabel/filament-blackbox';
     }
 
     /**
@@ -100,9 +125,10 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('skeleton', __DIR__ . '/../resources/dist/components/skeleton.js'),
-            // Css::make('skeleton-styles', __DIR__ . '/../resources/dist/skeleton.css'),
-            // Js::make('skeleton-scripts', __DIR__ . '/../resources/dist/skeleton.js'),
+            // AlpineComponent::make('filament-blackbox', __DIR__ . '/../resources/dist/components/filament-blackbox.js'),
+            Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css'),
+            Js::make('filament-blackbox-scripts', __DIR__ . '/../resources/dist/filament-blackbox.js'),
+
         ];
     }
 
@@ -112,7 +138,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getCommands(): array
     {
         return [
-            SkeletonCommand::class,
+            FilamentBlackboxCommand::class,
         ];
     }
 
@@ -146,7 +172,7 @@ class SkeletonServiceProvider extends PackageServiceProvider
     protected function getMigrations(): array
     {
         return [
-            'create_skeleton_table',
+            'create_filament-blackbox_table',
         ];
     }
 }

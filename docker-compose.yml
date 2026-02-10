@@ -1,0 +1,26 @@
+services:
+  app:
+    build:
+      args:
+        appVersion: dev
+      context: ./
+      dockerfile: Dockerfile
+      target: dev
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    entrypoint: bash
+    command: [ "-c", "while true; do echo hello; sleep infinity; done" ]
+    volumes:
+      - ./:/var/www
+      - ./docker/php/file.ini:/usr/local/etc/php/conf.d/file.ini
+
+  node:
+    image: node:22
+    restart: unless-stopped
+    user: "${UID:-1000}:${GID:-1000}"
+    working_dir: /app
+    volumes:
+      - ./:/app
+      - ./node_modules:/app/node_modules
+    command: [ "sleep", "infinity" ]
