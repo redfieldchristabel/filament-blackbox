@@ -58,9 +58,17 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         if (file_exists($package->basePath('/../resources/views'))) {
             $package->hasViews(static::$viewNamespace);
         }
+
+        $helpers = $this->packagePath('src/helpers.php');
+
+        if (file_exists($helpers)) {
+            require_once $helpers;
+        }
     }
 
-    public function packageRegistered(): void {}
+    public function packageRegistered(): void
+    {
+    }
 
     protected function packagePath(string $path): string
     {

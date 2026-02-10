@@ -1,4 +1,4 @@
-<div class="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+<div class="p-3 bg-white dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-none shadow">
     <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
         {{ \Illuminate\Support\Str::headline($item['attribute']) }}
     </div>

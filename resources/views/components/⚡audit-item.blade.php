@@ -18,7 +18,6 @@ use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
-use Illuminate\Support\Facades\Gate;
 use Filament\Notifications\Notification;
 
 new class extends Component implements HasActions, HasSchemas {
@@ -40,7 +39,7 @@ new class extends Component implements HasActions, HasSchemas {
 
         // Compute diff for this audit
         $diff = [];
-        $canView = $this->model && blackboxCheck('view', $this->model);
+        $canView = $this->model && \blackboxCheck('view', $this->model);
 
         if ($canView) {
             foreach ($this->audit->getModified() as $attribute => $value) {
@@ -197,7 +196,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Revert to the state before these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {
@@ -246,7 +245,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Restore the state after these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {

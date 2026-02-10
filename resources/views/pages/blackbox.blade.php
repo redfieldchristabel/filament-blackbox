@@ -23,62 +23,63 @@
                             current filters.</p>
                     </div>
                 @endif
+                <div class="border-l border-gray-300 dark:border-gray-700">
 
-                @foreach ($audits as $audit)
-                    <div class="relative border-l border-gray-200 dark:border-gray-700  pl-8"
-                        wire:key="audit-row-{{ $audit->id }}">
-                        <span
-                            class="absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full bg-gray-200 ring-4 ring-white dark:bg-gray-700"></span>
+                    @foreach ($audits as $audit)
+                        <div class="relative pl-8 last:pb-0" wire:key="audit-row-{{ $audit->id }}">
+                            <span
+                                class="absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full bg-gray-200 ring-4 ring-white dark:bg-gray-700"></span>
 
-                        <div class="mb-2 text-sm text-gray-400 flex justify-between items-center">
-                            <div class="flex items-center gap-3">
-                                <span>{{ $audit->created_at->diffForHumans() }} &bull;
-                                    {{ $audit->user->name ?? 'System' }}</span>
+                            <div class="mb-2 text-sm text-gray-400 flex justify-between items-center">
+                                <div class="flex items-center gap-3">
+                                    <span>{{ $audit->created_at->diffForHumans() }} &bull;
+                                        {{ $audit->user->name ?? 'System' }}</span>
 
-                                {{-- Resource Badge --}}
-                                @php
-                                    $badgeUrl = $this->getBadgeUrl($audit);
-                                    // This now gets the full class string from your Enum
-                                    $badgeClasses = $this->getBadgeColor($audit); 
-                                @endphp
+                                    {{-- Resource Badge --}}
+                                    @php
+                                        $badgeUrl = $this->getBadgeUrl($audit);
+                                        // This now gets the full class string from your Enum
+                                        $badgeClasses = $this->getBadgeColor($audit);
+                                    @endphp
 
-                                <a @if($badgeUrl) href="{{ $badgeUrl }}" @endif
-                                    class="fi-badge flex items-center justify-center gap-x-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
-                                    {{ $this->getBadgeLabel($audit) }}
-                                </a>
+                                    <a @if($badgeUrl) href="{{ $badgeUrl }}" @endif
+                                        class="fi-badge flex items-center justify-center gap-x-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
+                                        {{ $this->getBadgeLabel($audit) }}
+                                    </a>
+                                </div>
                             </div>
-                        </div>
 
-                        <livewire:blackbox::audit-item :audit="$audit" key="audit-item-{{ $audit->id }}" />
+                            <livewire:blackbox::audit-item :audit="$audit" key="audit-item-{{ $audit->id }}" />
 
-                        {{-- Collapsible Container --}}
-                        {{-- <div x-data="{ expanded: false }"
-                            class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all">
-                            <div class="relative">
-                                <div :class="!expanded ? 'max-h-70 overflow-hidden' : ''"
-                                    class="transition-all duration-300">
-                                    <livewire:redfieldchristabel /filament-blackbox::audit-item :audit="$audit"
-                                        key="audit-item-{{ $audit->id }}" />
-                                    <div x-show="!expanded"
-                                        class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none">
+                            {{-- Collapsible Container --}}
+                            {{-- <div x-data="{ expanded: false }"
+                                class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all">
+                                <div class="relative">
+                                    <div :class="!expanded ? 'max-h-70 overflow-hidden' : ''"
+                                        class="transition-all duration-300">
+                                        <livewire:redfieldchristabel /filament-blackbox::audit-item :audit="$audit"
+                                            key="audit-item-{{ $audit->id }}" />
+                                        <div x-show="!expanded"
+                                            class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none">
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-2 flex justify-center">
+                                        <button @click="expanded = !expanded" type="button"
+                                            class="text-xs font-semibold uppercase tracking-wider text-primary-600 hover:text-primary-500 dark:text-primary-400 flex items-center gap-1">
+                                            <span x-text="expanded ? 'Show Less' : 'Show Details'"></span>
+                                            <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform"
+                                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M19 9l-7 7-7-7"></path>
+                                            </svg>
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div class="mt-2 flex justify-center">
-                                    <button @click="expanded = !expanded" type="button"
-                                        class="text-xs font-semibold uppercase tracking-wider text-primary-600 hover:text-primary-500 dark:text-primary-400 flex items-center gap-1">
-                                        <span x-text="expanded ? 'Show Less' : 'Show Details'"></span>
-                                        <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform"
-                                            fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M19 9l-7 7-7-7"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </div> --}}
-                    </div>
-                @endforeach
+                            </div> --}}
+                        </div>
+                    @endforeach
+                </div>
 
                 <div class="pl-8 pt-4">
                     @if ($audits->hasMorePages())
