@@ -2,9 +2,16 @@
 
 namespace Blackbox\FilamentBlackbox;
 
+use Illuminate\Database\Eloquent\Collection;
+use OwenIt\Auditing\Models\Audit;
+
 class FilamentBlackbox
 {
-    public function getAudits(array $filters = [], int $perPage = 10)
+    /**
+     * @param  array<string, mixed>  $filters
+     * @return Collection<int, Audit>
+     */
+    public function getAudits(array $filters = [], int $perPage = 10): Collection
     {
         // Get the configured audit model class from the audit package
         $auditModel = config('audit.implementation', \OwenIt\Auditing\Models\Audit::class);

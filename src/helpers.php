@@ -7,6 +7,9 @@ if (! function_exists('blackboxCheck')) {
     /**
      * Safely checks permissions by ensuring a policy exists before calling Gate::check.
      * Mimics the signature of Illuminate\Support\Facades\Gate::check().
+     *
+     * @param  iterable<string>|string  $abilities
+     * @param  array<mixed>|mixed  $arguments
      */
     function blackboxCheck(iterable | string $abilities, mixed $arguments = []): bool
     {

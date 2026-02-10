@@ -20,7 +20,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, 'resources/dist'),
     emptyOutDir: true,
-    manifest: true,
+    manifest: false,
     rollupOptions: {
       output: {
         // For JS entry points (your 'index.js' becomes filament-blackbox.js)

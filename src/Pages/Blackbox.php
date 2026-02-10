@@ -13,8 +13,12 @@ use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Log;
 use Livewire\WithPagination;
 
+/**
+ * @property Schema $form
+ */
 class Blackbox extends Page implements HasActions, HasSchemas
 {
     use InteractsWithSchemas;
@@ -29,12 +33,14 @@ class Blackbox extends Page implements HasActions, HasSchemas
 
     protected static ?int $navigationSort = 100;
 
-    public $data;
+    /** @var array<string, mixed> */
+    public array $data;
 
     public int $perPage = 3;
 
-    public function mount()
+    public function mount(): void
     {
+
         $this->form->fill($this->data);
     }
 
@@ -46,11 +52,13 @@ class Blackbox extends Page implements HasActions, HasSchemas
 
     public function loadMore(): void
     {
+
         $this->perPage += 10;
     }
 
     public function form(Schema $schema): Schema
     {
+
         return $schema
             ->columns(4)
             ->statePath('data')
