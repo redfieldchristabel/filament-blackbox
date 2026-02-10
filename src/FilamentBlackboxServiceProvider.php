@@ -66,9 +66,7 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         }
     }
 
-    public function packageRegistered(): void
-    {
-    }
+    public function packageRegistered(): void {}
 
     protected function packagePath(string $path): string
     {
