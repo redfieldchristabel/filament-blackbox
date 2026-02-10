@@ -15,12 +15,12 @@ use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Livewire\WithPagination;
 
-
 class Blackbox extends Page implements HasActions, HasSchemas
 {
-    use InteractsWithSchemas, WithPagination;
+    use InteractsWithSchemas;
+    use WithPagination;
 
-    protected static string|\BackedEnum|null $navigationIcon = Heroicon::FingerPrint;
+    protected static string | \BackedEnum | null $navigationIcon = Heroicon::FingerPrint;
 
     protected static ?string $title = 'Black Box';
 
@@ -59,6 +59,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
                 Select::make('users')
                     ->options(function () {
                         $userModel = config('auth.providers.users.model');
+
                         return $userModel::all()->pluck('name', 'id'); // Use a standard 'name' or 'email'
                     })
                     ->multiple()
@@ -70,7 +71,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
                     ->options(
                         collect(config('blackbox.resources'))
                             ->forget('default')
-                            ->mapWithKeys(fn($item, $key) => [$key => $item['label'] ?? class_basename($key)])
+                            ->mapWithKeys(fn ($item, $key) => [$key => $item['label'] ?? class_basename($key)])
                     )
                     ->multiple()
                     ->placeholder('Select type...'),
@@ -91,13 +92,13 @@ class Blackbox extends Page implements HasActions, HasSchemas
                         ->label('From')
                         ->native(false)
                         ->placeholder('Start Date')
-                        ->maxDate(fn(Get $get) => $get('created_until')),
+                        ->maxDate(fn (Get $get) => $get('created_until')),
 
                     DatePicker::make('created_until')
                         ->label('To')
                         ->native(false)
                         ->placeholder('End Date')
-                        ->minDate(fn(Get $get) => $get('created_from')),
+                        ->minDate(fn (Get $get) => $get('created_from')),
                 ])->columns(2),
             ])->live();
     }
@@ -119,6 +120,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
         // Return the specific color or the default from config
         return $config['color'] ?? config('blackbox.resources.default.color', 'gray');
     }
+
     public function getBadgeLabel($audit): string
     {
         $config = config("blackbox.resources.{$audit->auditable_type}");
