@@ -19,8 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
 use Illuminate\Support\Facades\Gate;
-
-
+use Filament\Notifications\Notification;
 
 new class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
@@ -34,8 +33,6 @@ new class extends Component implements HasActions, HasSchemas {
     {
         $this->audit = $audit;
         $this->model = $audit->auditable;
-
-        // dd($this->model);
     }
 
     public function content(Schema $schema): Schema
@@ -43,12 +40,7 @@ new class extends Component implements HasActions, HasSchemas {
 
         // Compute diff for this audit
         $diff = [];
-        $canView = $this->model && (
-            // Check if a policy is registered for this model class
-            Gate::getPolicyFor($this->model::class) !== null
-            ? Gate::check('view', $this->model)
-            : true   // ← no policy → everyone can view
-        );
+        $canView = $this->model && blackboxCheck('view', $this->model);
 
         if ($canView) {
             foreach ($this->audit->getModified() as $attribute => $value) {
@@ -205,7 +197,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Revert to the state before these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => Gate::check('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {
@@ -254,7 +246,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Restore the state after these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => Gate::check('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {
@@ -314,76 +306,6 @@ new class extends Component implements HasActions, HasSchemas {
                     ->color('danger')
                     ->visible(!$canView)
                     ->tooltip('You do not have permission to view this resource.'),
-
-                // RepeatableEntry::make('modified')
-                //     ->label('Changes')
-                //     ->state(function () {
-                //         $state = $this->audit->getModified();
-
-                //         return collect($state)->map(function ($value, $key) {
-                //             $old = $value['field']['old'] ?? $value['old'] ?? null;
-                //             $new = $value['field']['new'] ?? $value['new'] ?? null;
-
-                //             // Decode JSON strings if needed
-                //             if (is_string($old) && str_starts_with($old, '[')) {
-                //                 $decoded = json_decode($old, true);
-                //                 if (json_last_error() === JSON_ERROR_NONE) {
-                //                     $old = $decoded;
-                //                 }
-                //             }
-                //             if (is_string($new) && str_starts_with($new, '[')) {
-                //                 $decoded = json_decode($new, true);
-                //                 if (json_last_error() === JSON_ERROR_NONE) {
-                //                     $new = $decoded;
-                //                 }
-                //             }
-
-                //             // Convert arrays to human-readable string
-                //             if (is_array($old)) {
-                //                 $old = implode(', ', array_map(function ($item) {
-                //                     if (is_array($item)) {
-                //                         return $item['first_name'] ?? json_encode($item);
-                //                     }
-                //                     return (string) $item;
-                //                 }, $old));
-                //             }
-                //             if (is_array($new)) {
-                //                 $new = implode(', ', array_map(function ($item) {
-                //                     if (is_array($item)) {
-                //                         return $item['first_name'] ?? json_encode($item);
-                //                     }
-                //                     return (string) $item;
-                //                 }, $new));
-                //             }
-
-                //             return [
-                //                 'field' => $key,
-                //                 'old' => $old,
-                //                 'new' => $new,
-                //             ];
-                //         })->values()->all();
-                //     })
-                //     // ->state(function () {
-                //     //     $state = $this->audit->getModified();
-
-                //     //     return collect($state)->map(function ($value, $key) {
-                //     //         return [
-                //     //             'field' => $key,
-                //     //             'old' => $value['field']['old'] ?? $value['old'] ?? null,
-                //     //             'new' => $value['field']['new'] ?? $value['new'] ?? null,
-                //     //         ];
-                //     //     })->values()->all();
-                //     // })
-                //     ->columnSpan('full')
-                //     ->table([
-                //         TableColumn::make('field'),
-                //         TableColumn::make('Old'),
-                //         TableColumn::make('New'),
-                //     ])->schema([
-                //             TextEntry::make('field'),
-                //             TextEntry::make('old'),
-                //             TextEntry::make('new'),
-                //         ]),
 
             ]);
     }
