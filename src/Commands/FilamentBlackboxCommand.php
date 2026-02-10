@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace Blackbox\FilamentBlackbox\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class FilamentBlackboxCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'blackbox:test';
 
     public $description = 'My command';
 

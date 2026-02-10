@@ -1,20 +1,23 @@
 <?php
 
-namespace VendorName\Skeleton;
+namespace Blackbox\FilamentBlackbox;
 
+use Blackbox\FilamentBlackbox\Pages\Blackbox;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 
-class SkeletonPlugin implements Plugin
+class FilamentBlackboxPlugin implements Plugin
 {
     public function getId(): string
     {
-        return 'skeleton';
+        return 'filament-blackbox';
     }
 
     public function register(Panel $panel): void
     {
-        //
+        $panel->pages([
+            Blackbox::class,
+        ]);
     }
 
     public function boot(Panel $panel): void
