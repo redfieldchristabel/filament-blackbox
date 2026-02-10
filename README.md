@@ -1,4 +1,4 @@
-# A professional-grade auditing UI for Filament PHP. Transform raw laravel-auditing data into a powerful, centralized 'Blackbox' flight recorder with beautiful diffs, relationship-aware timelines, and advanced filtering.
+# A Military Grade Audit Package for Owen-it/lravel-audit.
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/redfieldchristabel/filament-blackbox.svg?style=flat-square)](https://packagist.org/packages/redfieldchristabel/filament-blackbox)
 [![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/redfieldchristabel/filament-blackbox/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/redfieldchristabel/filament-blackbox/actions?query=workflow%3Arun-tests+branch%3Amain)
@@ -7,7 +7,7 @@
 
 
 
-This is where your description should go. Limit it to a paragraph or two. Consider adding a small example.
+A professional-grade auditing UI for Filament PHP. Transform raw laravel-auditing data into a powerful, centralized 'Blackbox' flight recorder with beautiful diffs, relationship-aware timelines, and advanced filtering.
 
 ## Installation
 
