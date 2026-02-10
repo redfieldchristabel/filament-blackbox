@@ -3,6 +3,7 @@
 namespace Blackbox\FilamentBlackbox;
 
 use Blackbox\FilamentBlackbox\Commands\FilamentBlackboxCommand;
+use Blackbox\FilamentBlackbox\Components\AuditItem;
 use Blackbox\FilamentBlackbox\Testing\TestsFilamentBlackbox;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
@@ -12,6 +13,7 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Facades\FilamentIcon;
 use Illuminate\Filesystem\Filesystem;
 use Livewire\Features\SupportTesting\Testable;
+use Livewire\Livewire;
 use Spatie\LaravelPackageTools\Commands\InstallCommand;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -41,24 +43,32 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
 
         $configFileName = $package->shortName();
 
-        if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
-            $package->hasConfigFile();
-        }
+        $package->hasConfigFile('blackbox');
+        // if (file_exists($package->basePath("/../config/{$configFileName}.php"))) {
+        //     $package->hasConfigFile();
+        // }
 
-        if (file_exists($package->basePath('/../database/migrations'))) {
-            $package->hasMigrations($this->getMigrations());
-        }
+        // if (file_exists($package->basePath('/../database/migrations'))) {
+        //     $package->hasMigrations($this->getMigrations());
+        // }
 
-        if (file_exists($package->basePath('/../resources/lang'))) {
-            $package->hasTranslations();
-        }
+        // if (file_exists($package->basePath('/../resources/lang'))) {
+        //     $package->hasTranslations();
+        // }
 
         if (file_exists($package->basePath('/../resources/views'))) {
             $package->hasViews(static::$viewNamespace);
         }
     }
 
-    public function packageRegistered(): void {}
+    public function packageRegistered(): void
+    {
+    }
+
+    protected function packagePath(string $path): string
+    {
+        return __DIR__ . '/../' . $path;
+    }
 
     public function packageBooted(): void
     {
@@ -85,8 +95,23 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
             }
         }
 
+        // // Register Livewire Components
+        // Livewire::addComponent(
+        //     name: 'audit-item',
+        //     viewPath: resource_path(__DIR__ . '/../resources/views/components/⚡audit-item.blade.php')
+        // );
+
+
+        Livewire::addNamespace(
+            namespace: 'blackbox',
+            viewPath: $this->packagePath('resources/views/components')
+        );
+
+        
+
         // Testing
         Testable::mixin(new TestsFilamentBlackbox);
+
     }
 
     protected function getAssetPackageName(): ?string
@@ -103,6 +128,7 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
             // AlpineComponent::make('filament-blackbox', __DIR__ . '/../resources/dist/components/filament-blackbox.js'),
             Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css'),
             Js::make('filament-blackbox-scripts', __DIR__ . '/../resources/dist/filament-blackbox.js'),
+
         ];
     }
 

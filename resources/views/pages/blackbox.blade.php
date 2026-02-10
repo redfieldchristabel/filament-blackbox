@@ -25,7 +25,8 @@
                 @endif
 
                 @foreach ($audits as $audit)
-                    <div class="relative border-l border-gray-200 dark:border-gray-700  pl-8" wire:key="audit-row-{{ $audit->id }}">
+                    <div class="relative border-l border-gray-200 dark:border-gray-700  pl-8"
+                        wire:key="audit-row-{{ $audit->id }}">
                         <span
                             class="absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full bg-gray-200 ring-4 ring-white dark:bg-gray-700"></span>
 
@@ -48,13 +49,16 @@
                             </div>
                         </div>
 
+                        <livewire:blackbox::audit-item :audit="$audit" key="audit-item-{{ $audit->id }}" />
+
                         {{-- Collapsible Container --}}
-                        <div x-data="{ expanded: false }"
+                        {{-- <div x-data="{ expanded: false }"
                             class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all">
                             <div class="relative">
                                 <div :class="!expanded ? 'max-h-70 overflow-hidden' : ''"
                                     class="transition-all duration-300">
-                                    <livewire:audit-item :audit="$audit" key="audit-item-{{ $audit->id }}" />
+                                    <livewire:redfieldchristabel /filament-blackbox::audit-item :audit="$audit"
+                                        key="audit-item-{{ $audit->id }}" />
                                     <div x-show="!expanded"
                                         class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none">
                                     </div>
@@ -72,7 +76,7 @@
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 @endforeach
 

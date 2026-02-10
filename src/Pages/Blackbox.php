@@ -20,7 +20,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
     use InteractsWithSchemas;
     use WithPagination;
 
-    protected static string | \BackedEnum | null $navigationIcon = Heroicon::FingerPrint;
+    protected static string|\BackedEnum|null $navigationIcon = Heroicon::FingerPrint;
 
     protected static ?string $title = 'Black Box';
 
@@ -71,7 +71,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
                     ->options(
                         collect(config('blackbox.resources'))
                             ->forget('default')
-                            ->mapWithKeys(fn ($item, $key) => [$key => $item['label'] ?? class_basename($key)])
+                            ->mapWithKeys(fn($item, $key) => [$key => $item['label'] ?? class_basename($key)])
                     )
                     ->multiple()
                     ->placeholder('Select type...'),
@@ -92,13 +92,13 @@ class Blackbox extends Page implements HasActions, HasSchemas
                         ->label('From')
                         ->native(false)
                         ->placeholder('Start Date')
-                        ->maxDate(fn (Get $get) => $get('created_until')),
+                        ->maxDate(fn(Get $get) => $get('created_until')),
 
                     DatePicker::make('created_until')
                         ->label('To')
                         ->native(false)
                         ->placeholder('End Date')
-                        ->minDate(fn (Get $get) => $get('created_from')),
+                        ->minDate(fn(Get $get) => $get('created_from')),
                 ])->columns(2),
             ])->live();
     }
