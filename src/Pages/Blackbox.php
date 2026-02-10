@@ -135,7 +135,6 @@ class Blackbox extends Page implements HasActions, HasSchemas
     {
         $config = config("blackbox.resources.{$audit->auditable_type}");
 
-        // Dynamically generate the route based on Filament naming conventions
         if (isset($config['url'])) {
             return $config['url'];
         }
