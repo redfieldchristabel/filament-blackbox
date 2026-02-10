@@ -3,7 +3,6 @@
 namespace Blackbox\FilamentBlackbox;
 
 use Blackbox\FilamentBlackbox\Commands\FilamentBlackboxCommand;
-use Blackbox\FilamentBlackbox\Components\AuditItem;
 use Blackbox\FilamentBlackbox\Testing\TestsFilamentBlackbox;
 use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
@@ -61,9 +60,7 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         }
     }
 
-    public function packageRegistered(): void
-    {
-    }
+    public function packageRegistered(): void {}
 
     protected function packagePath(string $path): string
     {
@@ -101,13 +98,10 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         //     viewPath: resource_path(__DIR__ . '/../resources/views/components/⚡audit-item.blade.php')
         // );
 
-
         Livewire::addNamespace(
             namespace: 'blackbox',
             viewPath: $this->packagePath('resources/views/components')
         );
-
-        
 
         // Testing
         Testable::mixin(new TestsFilamentBlackbox);
