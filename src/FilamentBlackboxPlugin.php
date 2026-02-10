@@ -16,7 +16,7 @@ class FilamentBlackboxPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->pages([
-            Blackbox::class
+            Blackbox::class,
         ]);
     }
 
