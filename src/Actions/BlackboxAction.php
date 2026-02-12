@@ -20,13 +20,13 @@ class BlackboxAction extends Action
 
         $this->slideOver();
 
-        $this->visible(fn(Model $record): bool => blackboxCheck('view', $record));
+        $this->visible(fn (Model $record): bool => blackboxCheck('view', $record));
 
         // $this->modalContent(fn (Model $record) => view('filament.actions.audit-timeline', [
         //     'record' => $record,
         // ]));
 
-        $this->modalContent(fn(Model $record) => new HtmlString(
+        $this->modalContent(fn (Model $record) => new HtmlString(
             \Livewire\Livewire::mount('blackbox::blackbox-slideover', ['record' => $record])
         ));
 

@@ -2,14 +2,13 @@
 
 namespace Blackbox\FilamentBlackbox;
 
-use OwenIt\Auditing\Models\Audit;
 use Illuminate\Pagination\CursorPaginator;
+use OwenIt\Auditing\Models\Audit;
 
 class FilamentBlackbox
 {
     /**
      * @param  array<string, mixed>  $filters
-     * @return CursorPaginator
      */
     public function getAudits(array $filters = [], int $perPage = 10): CursorPaginator
     {
