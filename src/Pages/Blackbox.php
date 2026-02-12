@@ -34,7 +34,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
     protected static ?int $navigationSort = 100;
 
     /** @var array<string, mixed> */
-    public array $data;
+    public array $data = [];
 
     public int $perPage = 3;
 
