@@ -11,11 +11,17 @@ return [
     */
     'resources' => [
 
-        // \App\Models\User::class => [
-        //     'label' => 'User',
-        //     'color' => 'fi-badge-color-primary', // Tailwind/Filament badge class
-        //     'url' => 'filament.admin.resources.users.edit', // Please use filament get route helper instead
-        // ],
+        \App\Models\User::class => [
+            'label' => 'User',
+            'color' => 'fi-badge-color-primary', // Tailwind/Filament badge class
+            'url' => 'filament.admin.resources.users.edit', // Please use filament get route helper instead
+            'relations' => [
+                'credentials' => 'pics',
+                'credentialPics' => 'pics',
+                'remarks' => 'pics',
+                'devices' => 'pics',
+            ]
+        ],
 
         // Default fallback settings
         'default' => [

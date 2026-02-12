@@ -2,16 +2,16 @@
 
 namespace Blackbox\FilamentBlackbox;
 
-use Illuminate\Database\Eloquent\Collection;
 use OwenIt\Auditing\Models\Audit;
+use Illuminate\Pagination\CursorPaginator;
 
 class FilamentBlackbox
 {
     /**
      * @param  array<string, mixed>  $filters
-     * @return Collection<int, Audit>
+     * @return CursorPaginator
      */
-    public function getAudits(array $filters = [], int $perPage = 10): Collection
+    public function getAudits(array $filters = [], int $perPage = 10): CursorPaginator
     {
         // Get the configured audit model class from the audit package
         $auditModel = config('audit.implementation', \OwenIt\Auditing\Models\Audit::class);
