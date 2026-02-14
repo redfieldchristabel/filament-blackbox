@@ -3,6 +3,7 @@
 namespace Blackbox\FilamentBlackbox\Pages;
 
 use Blackbox\FilamentBlackbox\FilamentBlackbox;
+use Blackbox\FilamentBlackbox\Traits\HasAuditMetadata;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -23,6 +24,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
 {
     use InteractsWithSchemas;
     use WithPagination;
+    use HasAuditMetadata;
 
     protected static string | \BackedEnum | null $navigationIcon = Heroicon::FingerPrint;
 
@@ -120,35 +122,35 @@ class Blackbox extends Page implements HasActions, HasSchemas
         );
     }
 
-    public function getBadgeColor($audit): string
-    {
-        // Look up config by the morph class (auditable_type)
-        $config = config("blackbox.resources.{$audit->auditable_type}");
+    // public function getBadgeColor($audit): string
+    // {
+    //     // Look up config by the morph class (auditable_type)
+    //     $config = config("blackbox.resources.{$audit->auditable_type}");
 
-        // Return the specific color or the default from config
-        return $config['color'] ?? config('blackbox.resources.default.color', 'gray');
-    }
+    //     // Return the specific color or the default from config
+    //     return $config['color'] ?? config('blackbox.resources.default.color', 'gray');
+    // }
 
-    public function getBadgeLabel($audit): string
-    {
-        $config = config("blackbox.resources.{$audit->auditable_type}");
+    // public function getBadgeLabel($audit): string
+    // {
+    //     $config = config("blackbox.resources.{$audit->auditable_type}");
 
-        // Use the custom label from config, otherwise fallback to the class basename
-        $label = $config['label'] ?? class_basename($audit->auditable_type);
+    //     // Use the custom label from config, otherwise fallback to the class basename
+    //     $label = $config['label'] ?? class_basename($audit->auditable_type);
 
-        return $label . ' #' . $audit->auditable_id;
-    }
+    //     return $label . ' #' . $audit->auditable_id;
+    // }
 
-    public function getBadgeUrl($audit): ?string
-    {
-        $config = config("blackbox.resources.{$audit->auditable_type}");
+    // public function getBadgeUrl($audit): ?string
+    // {
+    //     $config = config("blackbox.resources.{$audit->auditable_type}");
 
-        if (isset($config['url'])) {
-            return $config['url'];
-        }
+    //     if (isset($config['url'])) {
+    //         return $config['url'];
+    //     }
 
-        return null;
-    }
+    //     return null;
+    // }
 
     protected function getViewData(): array
     {

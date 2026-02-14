@@ -6,10 +6,14 @@ use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Models\Audit;
 use OwenIt\Auditing\Contracts\Auditable;
+use Blackbox\FilamentBlackbox\Traits\HasAuditMetadata;
+
 
 new class extends Component {
     use InteractsWithForms;
     use InteractsWithInfolists;
+    use HasAuditMetadata;
+
 
     public Model $record;
 
@@ -97,48 +101,53 @@ new class extends Component {
             ->get();
     }
 
-    public function getBadgeColor(Audit $audit): string
-    {
-        $resourceConfig = config("blackbox.resources.{$audit->auditable_type}");
+    // public function getBadgeColor(Audit $audit): string
+    // {
+    //     $resourceConfig = config("blackbox.resources.{$audit->auditable_type}");
 
-        // Return the specific color, or the default gray from config
-        return $resourceConfig['color'] ?? config('blackbox.resources.default.color', 'fi-badge-color-gray');
-    }
+    //     // Return the specific color, or the default gray from config
+    //     return $resourceConfig['color'] ?? config('blackbox.resources.default.color', 'fi-badge-color-gray');
+    // }
 
-    public function getBadgeLabel(Audit $audit): string
-    {
-        $resourceConfig = config("blackbox.resources.{$audit->auditable_type}");
+    // public function getBadgeLabel(Audit $audit): string
+    // {
+    //     $resourceConfig = config("blackbox.resources.{$audit->auditable_type}");
 
-        // Use the label from config if exists, otherwise fallback to class basename
-        $label = $resourceConfig['label'] ?? class_basename($audit->auditable_type);
+    //     // Use the label from config if exists, otherwise fallback to class basename
+    //     $label = $resourceConfig['label'] ?? class_basename($audit->auditable_type);
 
-        return $label . ' #' . $audit->auditable_id;
-    }
+    //     return $label . ' #' . $audit->auditable_id;
+    // }
 
 
-    public function getBadgeUrl(Audit $audit): ?string
-    {
-        $config = config("blackbox.resources.{$audit->auditable_type}");
-        $resource = $config['resource'] ?? null;
+    // public function getBadgeUrl(Audit $audit): ?string
+    // {
 
-        if (!$resource || !class_exists($resource)) {
-            return null;
-        }
+    //     // if (!$audit->auditable()->exists()) {
+    //     //     return null;
+    //     // }
 
-        /** @var \Filament\Resources\Resource $resource */
-        try {
-            // 1. Try to generate the 'edit' page URL
-            return $resource::getUrl('edit', ['record' => $audit->auditable_id]);
-        } catch (\Throwable $th) {
-            try {
-                // 2. Fallback: Try to generate the 'view' page URL
-                return $resource::getUrl('view', ['record' => $audit->auditable_id]);
-            } catch (\Throwable $th) {
-                // 3. If neither exists or user lacks access, return null
-                return null;
-            }
-        }
-    }
+    //     $config = config("blackbox.resources.{$audit->auditable_type}");
+    //     $resource = $config['resource'] ?? null;
+
+    //     if (!$resource || !class_exists($resource)) {
+    //         return null;
+    //     }
+
+    //     /** @var \Filament\Resources\Resource $resource */
+    //     try {
+    //         // 1. Try to generate the 'edit' page URL
+    //         return $resource::getUrl('edit', ['record' => $audit->auditable_id]);
+    //     } catch (\Throwable $th) {
+    //         try {
+    //             // 2. Fallback: Try to generate the 'view' page URL
+    //             return $resource::getUrl('view', ['record' => $audit->auditable_id]);
+    //         } catch (\Throwable $th) {
+    //             // 3. If neither exists or user lacks access, return null
+    //             return null;
+    //         }
+    //     }
+    // }
 };
 ?>
 
@@ -167,11 +176,11 @@ new class extends Component {
 
                     @if($url = $this->getBadgeUrl($audit))
                         <a href="{{ $url }}" wire:navigate
-                            class="text-xs px-2 py-0.5 rounded hover:opacity-80 transition-opacity {{ $this->getBadgeColor($audit) }}">
+                            class="fi-color fi-badge fi-size-sm hover:opacity-75 {{ $this->getBadgeColor($audit) }}">
                             {{ $this->getBadgeLabel($audit) }}
                         </a>
                     @else
-                        <span class="text-xs px-2 py-0.5 rounded {{ $this->getBadgeColor($audit) }}">
+                        <span class="fi-color fi-badge fi-size-sm {{ $this->getBadgeColor($audit) }}">
                             {{ $this->getBadgeLabel($audit) }}
                         </span>
                     @endif

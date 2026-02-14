@@ -43,7 +43,7 @@
                                     @endphp
 
                                     <a @if($badgeUrl) href="{{ $badgeUrl }}" @endif
-                                        class="fi-badge flex items-center justify-center gap-x-1 rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset transition-colors {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
+                                        class="fi-color fi-badge fi-size-sm {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
                                         {{ $this->getBadgeLabel($audit) }}
                                     </a>
                                 </div>
