@@ -3,7 +3,6 @@
 namespace Blackbox\FilamentBlackbox\Traits;
 
 use OwenIt\Auditing\Models\Audit;
-use Illuminate\Support\Facades\Log;
 use Throwable;
 
 
@@ -50,7 +49,7 @@ trait HasAuditMetadata
         $config = $resources[$audit->getAttribute('auditable_type')] ?? [];
         $resource = $config['resource'] ?? null;
 
-        if (!$resource || !class_exists((string) $resource)) {
+        if (! $resource || ! class_exists((string) $resource)) {
             return null;
         }
 

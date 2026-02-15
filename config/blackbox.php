@@ -19,9 +19,9 @@ return [
     | These classes are APPENDED to the base Filament badge classes:
     | "fi-badge fi-color-custom fi-size-sm fi-badge-color-..."
     | You can use Filament colors (e.g., 'fi-color-primary') or standard Tailwind.
-    | 
-    | IMPORTANT FOR TAILWIND: 
-    | If you use custom Tailwind classes here, you MUST add the following to 
+    |
+    | IMPORTANT FOR TAILWIND:
+    | If you use custom Tailwind classes here, you MUST add the following to
     | your theme's CSS file so Tailwind's JIT compiler scans this config:
     | @source "../../config/blackbox.php";
     |
@@ -30,11 +30,11 @@ return [
     | 'edit' or 'view' URLs for the auditable record.
     |
     | 'relations':
-    | Defines which related models should have their audits pulled into the 
+    | Defines which related models should have their audits pulled into the
     | main record's timeline (e.g., seeing "Address" edits while viewing a "User").
     |
     | KEY: The relationship name defined on your Model (e.g., 'profile').
-    | VALUE: A comma-separated string of nested relationships to eager load 
+    | VALUE: A comma-separated string of nested relationships to eager load
     |        (e.g., 'user,avatar'). If no sub-relations are needed, leave EMPTY ('').
     |
     */
