@@ -5,13 +5,11 @@ namespace Blackbox\FilamentBlackbox\Traits;
 use OwenIt\Auditing\Models\Audit;
 use Throwable;
 
-
 /**
- * @param Audit&object{auditable_type: string, auditable_id: int|string} $audit
+ * @param  Audit&object{auditable_type: string, auditable_id: int|string}  $audit
  */
 trait HasAuditMetadata
 {
-
     public function getBadgeColor(Audit $audit): string
     {
 
