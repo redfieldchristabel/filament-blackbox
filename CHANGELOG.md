@@ -2,6 +2,22 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.1 - Initial Beta Release - 2026-02-15
+
+### What's Changed
+
+* Bump aglipanci/laravel-pint-action from 2.4 to 2.6 by @dependabot[bot] in https://github.com/redfieldchristabel/filament-blackbox/pull/1
+* Bump dependabot/fetch-metadata from 1.6.0 to 2.5.0 by @dependabot[bot] in https://github.com/redfieldchristabel/filament-blackbox/pull/2
+* Initialize by @redfieldchristabel in https://github.com/redfieldchristabel/filament-blackbox/pull/3
+* Blackbox action by @redfieldchristabel in https://github.com/redfieldchristabel/filament-blackbox/pull/4
+
+### New Contributors
+
+* @dependabot[bot] made their first contribution in https://github.com/redfieldchristabel/filament-blackbox/pull/1
+* @redfieldchristabel made their first contribution in https://github.com/redfieldchristabel/filament-blackbox/pull/3
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/commits/v0.0.1
+
 ## 1.0.0 - 202X-XX-XX
 
 - initial release
