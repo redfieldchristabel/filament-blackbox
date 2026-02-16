@@ -42,7 +42,7 @@ return [
 
         // \App\Models\User::class => [
         //     'label' => 'User',
-        //     'badge_class' => 'fi-color-primary', // Appends to base badge classes
+        //     'badge_class' => 'fi-badge fi-color-primary', // Appends to base badge classes
         //     'resource' => \App\Filament\Resources\UserResource::class,
         //     'relations' => [
         //         'profile' => '', // Loads profile audits; no sub-relations
