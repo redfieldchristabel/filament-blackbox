@@ -4,7 +4,6 @@ namespace Blackbox\FilamentBlackbox;
 
 use Blackbox\FilamentBlackbox\Commands\FilamentBlackboxCommand;
 use Blackbox\FilamentBlackbox\Testing\TestsFilamentBlackbox;
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
@@ -114,6 +113,11 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
 
     }
 
+    protected function shouldRegisterAssets(): bool
+    {
+        return config('blackbox.register_assets', false);
+    }
+
     protected function getAssetPackageName(): ?string
     {
         return 'redfieldchristabel/filament-blackbox';
@@ -125,8 +129,7 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
     protected function getAssets(): array
     {
         return [
-            // AlpineComponent::make('filament-blackbox', __DIR__ . '/../resources/dist/components/filament-blackbox.js'),
-            Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css'),
+            ...($this->shouldRegisterAssets() ? [Css::make('filament-blackbox-styles', __DIR__ . '/../resources/dist/filament-blackbox.css')] : []),
             Js::make('filament-blackbox-scripts', __DIR__ . '/../resources/dist/filament-blackbox.js'),
 
         ];
