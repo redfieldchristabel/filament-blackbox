@@ -121,6 +121,7 @@ return [
     |
     */
     // @source '../../../../vendor/redfieldchristabel/filament-blackbox/**/*';
+    // @source '../../../../config/blackbox.php';
 
     'register_assets' => false,
 ];
