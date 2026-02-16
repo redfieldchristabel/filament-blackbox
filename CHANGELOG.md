@@ -2,6 +2,14 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.2 - 2026-02-16
+
+### What's Changed
+
+* Suppoer prebuilt tailwind css by @redfieldchristabel in https://github.com/redfieldchristabel/filament-blackbox/pull/5
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.1...v0.0.2
+
 ## v0.0.1 - Initial Beta Release - 2026-02-15
 
 ### What's Changed
