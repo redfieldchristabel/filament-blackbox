@@ -20,11 +20,13 @@ composer require redfieldchristabel/filament-blackbox
 > [!IMPORTANT]
 > If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
 
-After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages.
+After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages. This is the recommended way to use the package and the default configuration.
 
 ```css
-@source '../../../../vendor/redfieldchristabel/filament-blackbox/resources/**/*.blade.php';
+@source '../../../../vendor/redfieldchristabel/filament-blackbox/**/*';
 ```
+
+If you prefer to have the package register the assets for you, you can publish the config file and set `register_assets` to `true`.
 
 You can publish and run the migrations with:
 
@@ -49,6 +51,7 @@ This is the contents of the published config file:
 
 ```php
 return [
+    'register_assets' => false,
 ];
 ```
 

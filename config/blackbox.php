@@ -60,4 +60,17 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Asset Registration
+    |--------------------------------------------------------------------------
+    |
+    | If true, the package's CSS assets will be automatically registered with Filament.
+    |
+    | Recommended: Set to false and include the following in your theme's CSS file:
+    |
+    */
+    // @source '../../../../vendor/redfieldchristabel/filament-blackbox/**/*';
+
+    'register_assets' => false,
 ];
