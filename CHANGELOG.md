@@ -2,6 +2,12 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.3 - 2026-02-16
+
+### What's Changed
+
+* Remove the Livewire v4 bolt icon in the filename, as the composer doesn't support the icon in the filename out of the box
+
 ## v0.0.2 - 2026-02-16
 
 ### What's Changed
