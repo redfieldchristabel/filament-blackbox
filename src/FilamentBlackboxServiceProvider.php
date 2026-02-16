@@ -4,7 +4,6 @@ namespace Blackbox\FilamentBlackbox;
 
 use Blackbox\FilamentBlackbox\Commands\FilamentBlackboxCommand;
 use Blackbox\FilamentBlackbox\Testing\TestsFilamentBlackbox;
-use Filament\Support\Assets\AlpineComponent;
 use Filament\Support\Assets\Asset;
 use Filament\Support\Assets\Css;
 use Filament\Support\Assets\Js;
