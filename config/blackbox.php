@@ -23,7 +23,7 @@ return [
     | IMPORTANT FOR TAILWIND:
     | If you use custom Tailwind classes here, you MUST add the following to
     | your theme's CSS file so Tailwind's JIT compiler scans this config:
-    | @source "../../config/blackbox.php";
+    | @source '../../../../config/blackbox.php';
     |
     | 'resource':
     | The fully qualified name of the Filament Resource class. Used to generate
