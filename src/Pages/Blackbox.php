@@ -24,8 +24,8 @@ use Livewire\WithPagination;
 class Blackbox extends Page implements HasActions, HasSchemas
 {
     use HasAuditMetadata;
-    use InteractsWithSchemas;
     use InteractsWithActions;
+    use InteractsWithSchemas;
     use WithPagination;
 
     protected static string | \BackedEnum | null $navigationIcon = Heroicon::FingerPrint;
