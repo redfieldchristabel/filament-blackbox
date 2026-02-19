@@ -72,8 +72,8 @@ new class extends Component implements HasActions, HasSchemas {
                     // Usually sync is for IDs, but if we have a custom renderer for the attribute, utilize it.
                     $rendererMethod = $attribute . 'AuditRenderer';
                     if (method_exists($this->model, $rendererMethod)) {
-                        $added = collect($added)->map(fn($item) => $this->model->$rendererMethod($item))->implode(', ');
-                        $removed = collect($removed)->map(fn($item) => $this->model->$rendererMethod($item))->implode(', ');
+                        $added = collect($added)->map(fn($item) => $this->model->$rendererMethod($item))->all();
+                        $removed = collect($removed)->map(fn($item) => $this->model->$rendererMethod($item))->all();
                     }
 
                     $diff[] = [
