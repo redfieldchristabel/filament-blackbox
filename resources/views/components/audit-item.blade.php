@@ -26,7 +26,7 @@ new class extends Component implements HasActions, HasSchemas {
 
     public Audit $audit;
 
-    public Model $model;
+    public ?Model $model;
 
     public function mount(Audit $audit)
     {
@@ -196,7 +196,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Revert to the state before these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {
@@ -245,7 +245,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Restore the state after these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
+                                ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
                                     $model = $this->audit->auditable;
                                     if (!$model) {

@@ -46,6 +46,12 @@
                                         class="fi-color fi-badge fi-size-sm {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
                                         {{ $this->getBadgeLabel($audit) }}
                                     </a>
+
+                                    @if($audit->auditable === null)
+                                        <div class="fi-color-danger fi-badge fi-size-sm ml-2">
+                                            Deleted
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
