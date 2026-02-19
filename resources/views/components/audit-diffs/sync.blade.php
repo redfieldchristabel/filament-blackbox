@@ -14,11 +14,11 @@
                 <span class="text-gray-400 italic text-xs">-</span>
             @else
                 <div class="flex flex-wrap gap-1">
-                    @foreach((array)$item['added'] as $val)
+                    <?php foreach((array)$item['added'] as $val): ?>
                         <div  class="font-mono text-xs text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded">
                             {{ is_array($val) || is_object($val) ? json_encode($val) : $val }}
                         </div>
-                    @endforeach
+                    <?php endforeach; ?>
                 </div>
             @endif
         </div>
@@ -33,11 +33,11 @@
                 <span class="text-gray-400 italic text-xs">-</span>
             @else
                 <div class="flex flex-wrap gap-1">
-                   @foreach((array)$item['removed'] as $val)
+                   <?php foreach((array)$item['removed'] as $val): ?>
                         <div class="font-mono text-xs text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 px-2 py-1 rounded">
                             {{ is_array($val) || is_object($val) ? json_encode($val) : $val }}
                         </div>
-                    @endforeach
+                    <?php endforeach; ?>
                 </div>
             @endif
         </div>
