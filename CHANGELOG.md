@@ -2,6 +2,15 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.4 - 2026-02-19
+
+### What's Changed
+
+* chore(deps): bump actions/checkout from 4 to 6 by @dependabot[bot] in https://github.com/redfieldchristabel/filament-blackbox/pull/6
+* chore(deps): bump stefanzweifel/git-auto-commit-action from 5 to 7 by @dependabot[bot] in https://github.com/redfieldchristabel/filament-blackbox/pull/7
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.3...v0.0.4
+
 ## v0.0.3 - 2026-02-16
 
 ### What's Changed
