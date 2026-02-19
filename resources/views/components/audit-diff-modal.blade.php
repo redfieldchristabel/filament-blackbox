@@ -5,7 +5,7 @@
 @else
     <div class="grid gap-4">
         @foreach ($diff as $item)
-            <div class="p-3 bg-white dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-gray-700 shadow">
+            <div wire:key="diff-{{ $item['attribute'] }}" class="p-3 bg-white dark:bg-zinc-900 rounded-lg border border-gray-100 dark:border-gray-700 shadow">
                 <div class="text-xs font-semibold uppercase text-gray-500 dark:text-gray-400 mb-2">
                     {{ \Illuminate\Support\Str::headline($item['attribute']) }}
                 </div>

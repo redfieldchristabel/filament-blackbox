@@ -15,7 +15,7 @@
             @else
                 <div class="flex flex-wrap gap-1">
                     @foreach((array)$item['added'] as $val)
-                        <div class="font-mono text-xs text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded">
+                        <div  class="font-mono text-xs text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 px-2 py-1 rounded">
                             {{ is_array($val) || is_object($val) ? json_encode($val) : $val }}
                         </div>
                     @endforeach
