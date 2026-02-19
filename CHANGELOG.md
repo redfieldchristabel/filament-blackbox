@@ -2,6 +2,14 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.5 - 2026-02-19
+
+### What's Changed
+
+* Fix the issue where some audit and main audit cannot be open like showing 500  error
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.3...v0.0.5
+
 ## v0.0.4 - 2026-02-19
 
 ### What's Changed
