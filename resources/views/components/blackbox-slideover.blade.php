@@ -190,7 +190,9 @@ new class extends Component {
 
                 <!-- Card Content -->
                 <div x-data="{ expanded: false }"
-                    class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+                    @click="expanded = !expanded"
+                    :class="expanded ? '' : 'cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50'"
+                    class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all">
                     <div :class="expanded ? '' : 'max-h-60 overflow-hidden relative'">
                         <livewire:blackbox::audit-item :audit="$audit" :key="$audit->id" />
                         <div x-show="!expanded"
@@ -199,7 +201,7 @@ new class extends Component {
                     </div>
 
                     <div class="mt-2 flex justify-center">
-                        <button type="button" @click="expanded = !expanded"
+                        <button type="button"
                             class="text-xs text-primary-600 hover:text-primary-500 font-medium flex items-center gap-1 focus:outline-none">
                             <span x-text="expanded ? 'Show Less' : 'Show More'"></span>
                             <x-filament::icon icon="heroicon-m-chevron-down"

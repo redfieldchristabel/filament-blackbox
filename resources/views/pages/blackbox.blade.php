@@ -49,25 +49,25 @@
                                 </div>
                             </div>
 
-                            <livewire:blackbox::audit-item :audit="$audit" key="audit-item-{{ $audit->id }}" />
-
                             {{-- Collapsible Container --}}
-                            {{-- <div x-data="{ expanded: false }"
+                            <div x-data="{ expanded: false }"
+                                @click="expanded = !expanded"
+                                :class="expanded ? '' : 'cursor-pointer hover:bg-gray-50/50 dark:hover:bg-gray-800/50'"
                                 class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 transition-all">
-                                <div class="relative">
-                                    <div :class="!expanded ? 'max-h-70 overflow-hidden' : ''"
+                                <div>
+                                    <div :class="!expanded ? 'max-h-60 overflow-hidden relative' : ''"
                                         class="transition-all duration-300">
-                                        <livewire:redfieldchristabel /filament-blackbox::audit-item :audit="$audit"
+                                        <livewire:blackbox::audit-item :audit="$audit"
                                             key="audit-item-{{ $audit->id }}" />
                                         <div x-show="!expanded"
-                                            class="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none">
+                                            class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none">
                                         </div>
                                     </div>
 
                                     <div class="mt-2 flex justify-center">
-                                        <button @click="expanded = !expanded" type="button"
+                                        <button type="button"
                                             class="text-xs font-semibold uppercase tracking-wider text-primary-600 hover:text-primary-500 dark:text-primary-400 flex items-center gap-1">
-                                            <span x-text="expanded ? 'Show Less' : 'Show Details'"></span>
+                                            <span x-text="expanded ? 'Show Less' : 'Show More'"></span>
                                             <svg :class="expanded ? 'rotate-180' : ''" class="w-4 h-4 transition-transform"
                                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -76,7 +76,7 @@
                                         </button>
                                     </div>
                                 </div>
-                            </div> --}}
+                            </div>
                         </div>
                     @endforeach
                 </div>
