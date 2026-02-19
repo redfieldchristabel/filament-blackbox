@@ -174,6 +174,28 @@ class Order extends Model implements Auditable
 
 When Blackbox encounters the `status_id` attribute in an audit log, it will automatically use this method to transform the ID into its human-readable label.
 
+#### Relation Morphing (Sync Events)
+
+This feature is also powerful for `sync` events (commonly used for Many-to-Many relationships like Roles or Tags). When a relation is synced, the audit data often contains full objects. You can "morph" these into simple strings for the UI:
+
+```php
+class User extends Model implements Auditable
+{
+    use \OwenIt\Auditing\Auditable;
+
+    /**
+     * Morph the 'roles' sync data to show only the role names.
+     * The $item parameter will be an array representing the role object.
+     */
+    public function rolesAuditRenderer(array $item): string
+    {
+        return $item['name'] ?? 'Unknown Role';
+    }
+}
+```
+
+With this method, the Blackbox UI will show a clean list of role names (e.g., "Admin", "Editor") instead of dumping the raw JSON objects of the roles.
+
 ## Testing
 
 ```bash
