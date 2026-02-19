@@ -2,6 +2,7 @@
 
 use Livewire\Component;
 use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Infolists\Concerns\InteractsWithInfolists;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Models\Audit;
@@ -11,6 +12,7 @@ use Blackbox\FilamentBlackbox\Traits\HasAuditMetadata;
 
 new class extends Component {
     use InteractsWithForms;
+    use InteractsWithActions;
     use InteractsWithInfolists;
     use HasAuditMetadata;
 

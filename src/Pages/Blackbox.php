@@ -4,6 +4,7 @@ namespace Blackbox\FilamentBlackbox\Pages;
 
 use Blackbox\FilamentBlackbox\FilamentBlackbox;
 use Blackbox\FilamentBlackbox\Traits\HasAuditMetadata;
+use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -24,6 +25,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
 {
     use HasAuditMetadata;
     use InteractsWithSchemas;
+    use InteractsWithActions;
     use WithPagination;
 
     protected static string | \BackedEnum | null $navigationIcon = Heroicon::FingerPrint;
