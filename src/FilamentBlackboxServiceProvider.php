@@ -166,5 +166,4 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
     {
         return [];
     }
-
 }
