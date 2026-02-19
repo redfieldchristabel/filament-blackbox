@@ -26,7 +26,7 @@
                 <div class="border-l border-gray-300 dark:border-gray-700">
 
                     @foreach ($audits as $audit)
-                        <div class="relative pl-8 last:pb-0" wire:key="audit-row-{{ $audit->id }}">
+                        <div class="relative pl-8 mb-4 last:pb-0" wire:key="audit-row-{{ $audit->id }}">
                             <span
                                 class="absolute -left-[5px] top-1 h-2.5 w-2.5 rounded-full bg-gray-200 ring-4 ring-white dark:bg-gray-700"></span>
 
@@ -43,12 +43,12 @@
                                     @endphp
 
                                     <a @if($badgeUrl) href="{{ $badgeUrl }}" @endif
-                                        class="fi-color fi-badge fi-size-sm {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
+                                        class="fi-color fi-badge fi-size-sm fi-text-color-700 dark:fi-text-color-200 {{ $badgeClasses }} {{ $badgeUrl ? 'hover:opacity-75' : 'cursor-default' }}">
                                         {{ $this->getBadgeLabel($audit) }}
                                     </a>
 
                                     @if($audit->auditable === null)
-                                        <div class="fi-color-danger fi-badge fi-size-sm ml-2">
+                                        <div class="fi-color fi-color-danger fi-text-color-700 dark:fi-text-color-200 fi-badge fi-size-sm ml-2">
                                             Deleted
                                         </div>
                                     @endif
