@@ -2,6 +2,10 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.8 - 2026-02-19
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.7...v0.0.8
+
 ## v0.0.7 - 2026-02-19
 
 **Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.6...v0.0.7
