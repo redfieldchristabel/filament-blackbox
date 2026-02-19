@@ -28,10 +28,14 @@ After setting up a custom theme add the plugin's views to your theme css file or
 
 If you prefer to have the package register the assets for you, you can publish the config file and set `register_assets` to `true`.
 
-You can publish and run the migrations with:
+### Database Setup
+
+This package relies on [OwenIt/laravel-auditing](https://www.laravel-auditing.com/guide/installation.html). Please follow their official guide to install and configure it first.
+
+If you haven't yet exposed the migrations for the audit package, you can do so with:
 
 ```bash
-php artisan vendor:publish --tag="filament-blackbox-migrations"
+php artisan vendor:publish --provider="OwenIt\Auditing\AuditingServiceProvider" --tag="migrations"
 php artisan migrate
 ```
 
@@ -131,9 +135,44 @@ return [
 ## Usage
 
 ```php
-$filamentBlackbox = new Blackbox\FilamentBlackbox();
-echo $filamentBlackbox->echoPhrase('Hello, Blackbox!');
+// In a Filament Panel Provider
+$panel
+    ->plugin(Blackbox\FilamentBlackbox\FilamentBlackboxPlugin::make())
 ```
+
+### Customizing Audit Rendering
+
+You can customize how specific attributes are rendered in the audit timeline by adding "magic methods" to your Auditable models. This is particularly useful for ID-based fields (like foreign keys) or complex JSON structures.
+
+Define a method following the pattern `{attribute}AuditRenderer` on your model. This method will receive the raw value (from either the `old` or `new` batch) and should return a string representation.
+
+```php
+namespace App\Models;
+
+use OwenIt\Auditing\Contracts\Auditable;
+use Illuminate\Database\Eloquent\Model;
+
+class Order extends Model implements Auditable
+{
+    use \OwenIt\Auditing\Auditable;
+
+    /**
+     * Custom renderer for the 'status_id' attribute.
+     * Works for standard events (created, updated) and 'sync' events.
+     */
+    public function statusIdAuditRenderer($value): string
+    {
+        return match($value) {
+            1 => 'Pending',
+            2 => 'Processing',
+            3 => 'Completed',
+            default => "Unknown ($value)",
+        };
+    }
+}
+```
+
+When Blackbox encounters the `status_id` attribute in an audit log, it will automatically use this method to transform the ID into its human-readable label.
 
 ## Testing
 
