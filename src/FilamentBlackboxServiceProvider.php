@@ -34,8 +34,6 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
             ->hasInstallCommand(function (InstallCommand $command) {
                 $command
                     ->publishConfigFile()
-                    ->publishMigrations()
-                    ->askToRunMigrations()
                     ->askToStarRepoOnGitHub('redfieldchristabel/filament-blackbox');
             });
 
@@ -169,13 +167,4 @@ class FilamentBlackboxServiceProvider extends PackageServiceProvider
         return [];
     }
 
-    /**
-     * @return array<string>
-     */
-    protected function getMigrations(): array
-    {
-        return [
-            'create_filament-blackbox_table',
-        ];
-    }
 }
