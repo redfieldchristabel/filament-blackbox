@@ -2,6 +2,14 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## v0.0.10 - 2026-02-20
+
+### What's Changed
+
+* 8 support soft delete feature by @redfieldchristabel in https://github.com/redfieldchristabel/filament-blackbox/pull/9
+
+**Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.9...v0.0.10
+
 ## v0.0.9 - 2026-02-19
 
 **Full Changelog**: https://github.com/redfieldchristabel/filament-blackbox/compare/v0.0.8...v0.0.9
