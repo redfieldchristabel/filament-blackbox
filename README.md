@@ -140,6 +140,19 @@ $panel
     ->plugin(Blackbox\FilamentBlackbox\FilamentBlackboxPlugin::make())
 ```
 
+<br>
+<!-- Placeholder for flexing screenshots of the UI. -->
+<!-- Feel free to add some awesome UI captures here! -->
+<br>
+
+### Soft Deletes & Recovery
+
+Filament Blackbox has built-in, out-of-the-box support for models utilizing Laravel's `SoftDeletes` trait! 
+
+When a model is soft-deleted, Blackbox will automatically resolve the trashed record so you can still view its full audit history—no more "Missing Record" errors. 
+
+Even better, when viewing the audit log of a `deleted` event for a soft-deleted model, Blackbox provides a native **Restore** action button. This allows administrators with the proper permissions to recover accidentally deleted records with a single click directly from the audit timeline!
+
 ### Customizing Audit Rendering
 
 You can customize how specific attributes are rendered in the audit timeline by adding "magic methods" to your Auditable models. This is particularly useful for ID-based fields (like foreign keys) or complex JSON structures.
