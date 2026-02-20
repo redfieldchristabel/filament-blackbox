@@ -31,7 +31,17 @@ new class extends Component implements HasActions, HasSchemas {
     public function mount(Audit $audit)
     {
         $this->audit = $audit;
-        $this->model = $audit->auditable;
+        
+        $model = $audit->auditable;
+        
+        if (! $model && $audit->auditable_type && $audit->auditable_id && class_exists($audit->auditable_type)) {
+            $modelClass = $audit->auditable_type;
+            if (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($modelClass))) {
+                $model = $modelClass::withTrashed()->find($audit->auditable_id);
+            }
+        }
+        
+        $this->model = $model;
     }
 
     public function content(Schema $schema): Schema
@@ -198,7 +208,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->requiresConfirmation()
                                 ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
-                                    $model = $this->audit->auditable;
+                                    $model = $this->model;
                                     if (!$model) {
                                         return null;
                                     }
@@ -225,7 +235,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 })
                                 ->action(function () {
 
-                                    $model = $this->audit->auditable;
+                                    $model = $this->model;
 
                                     if ($model) {
                                         $model->transitionTo($this->audit, true);
@@ -247,7 +257,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->requiresConfirmation()
                                 ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
                                 ->modalContent(function () {
-                                    $model = $this->audit->auditable;
+                                    $model = $this->model;
                                     if (!$model) {
                                         return null;
                                     }
@@ -267,7 +277,7 @@ new class extends Component implements HasActions, HasSchemas {
                                 })
                                 ->action(function () {
 
-                                    $model = $this->audit->auditable;
+                                    $model = $this->model;
 
                                     if ($model) {
                                         $model->transitionTo($this->audit);
@@ -276,6 +286,29 @@ new class extends Component implements HasActions, HasSchemas {
                                         Notification::make()
                                             ->title('Recover successfully')
                                             ->body('The model has been recovered successfully.')
+                                            ->success()
+                                            ->send();
+                                    }
+                                }),
+                            Action::make('restore')
+                                ->label('Restore')
+                                ->icon(Heroicon::ArrowPath)
+                                ->color('success')
+                                ->tooltip('Restore this soft-deleted record')
+                                ->requiresConfirmation()
+                                ->visible(fn(): bool => 
+                                    $this->model && 
+                                    method_exists($this->model, 'trashed') && 
+                                    $this->model->trashed() && 
+                                    $this->audit->event === 'deleted' && 
+                                    \blackboxCheck('restore', $this->model)
+                                )
+                                ->action(function () {
+                                    if ($this->model && method_exists($this->model, 'restore')) {
+                                        $this->model->restore();
+                                        Notification::make()
+                                            ->title('Restored successfully')
+                                            ->body('The record has been restored successfully.')
                                             ->success()
                                             ->send();
                                     }
