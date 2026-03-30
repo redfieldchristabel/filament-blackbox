@@ -140,10 +140,13 @@ $panel
     ->plugin(Blackbox\FilamentBlackbox\FilamentBlackboxPlugin::make())
 ```
 
-<br>
-<!-- Placeholder for flexing screenshots of the UI. -->
-<!-- Feel free to add some awesome UI captures here! -->
-<br>
+## Screenshots
+
+![Black Box Overview](images/Screenshot%202026-03-30%20at%2010-03-28%20Black%20Box%20-%20SISPAA.png)
+![User Audit List](images/Screenshot%202026-03-30%20at%2010-04-27%20Users%20-%20SISPAA.png)
+![User Audit Detail](images/Screenshot%202026-03-30%20at%2010-05-00%20Users%20-%20SISPAA.png)
+![Black Box Timeline](images/Screenshot%202026-03-30%20at%2010-05-16%20Black%20Box%20-%20SISPAA.png)
+
 
 ### Soft Deletes & Recovery
 
