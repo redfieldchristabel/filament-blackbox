@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Gate;
 if (! function_exists('blackboxCheck')) {
     /**
      * Safely checks permissions by ensuring a policy exists before calling Gate::check.
+     * Models without a policy are allowed or denied per `blackbox.authorize_without_policy`.
      * Mimics the signature of Illuminate\Support\Facades\Gate::check().
      *
      * @param  iterable<string>|string  $abilities
@@ -25,9 +26,10 @@ if (! function_exists('blackboxCheck')) {
         // Get the policy for the model
         $policy = Gate::getPolicyFor($model);
 
-        // If no policy is registered for this model, we fail safe
+        // No policy registered for this model: follow `blackbox.authorize_without_policy`
+        // (default true, the behaviour of v0.0.x). Set it to false to deny access instead.
         if (! $policy) {
-            return true;
+            return (bool) config('blackbox.authorize_without_policy', true);
         }
 
         // If policy exists, delegate to the real Gate

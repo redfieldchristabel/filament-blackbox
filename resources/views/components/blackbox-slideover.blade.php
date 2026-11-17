@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Models\Audit;
 use OwenIt\Auditing\Contracts\Auditable;
 use Blackbox\FilamentBlackbox\Traits\HasAuditMetadata;
+use Blackbox\FilamentBlackbox\Support\AuditRelations;
+use Blackbox\FilamentBlackbox\Support\AuditableAttributes;
 
 
 new class extends Component {
@@ -36,12 +38,17 @@ new class extends Component {
         $modelClass = get_class($this->record);
         $nativeAudits = $this->record->audits();
 
-        // 2. Fetch relations from config instead of model method
-        $resourceConfig = config("blackbox.resources.{$modelClass}");
-        $relations = $resourceConfig['relations'] ?? [];
+        // Order by the audit model's own created-at column (renamed timestamp
+        // columns supported); fall back to the primary key when it has none.
+        $createdAtColumn = AuditableAttributes::auditCreatedAtColumn($nativeAudits->getModel());
+        $orderColumn = $createdAtColumn ?? $nativeAudits->getModel()->getKeyName();
+
+        // 2. Relations come from `blackbox.resources.<Model>.relations`, falling back to
+        //    the model's auditRelations() method; associative and indexed entries both work.
+        $relations = AuditRelations::for($this->record);
 
         if (empty($relations)) {
-            return $nativeAudits->latest()->take($this->perPage)->get();
+            return $nativeAudits->latest($orderColumn)->take($this->perPage)->get();
         }
 
         // Prepare relations to load (Eager Loading to prevent N+1)
@@ -83,7 +90,9 @@ new class extends Component {
         }
 
         // 5. Execute unified Audit query
-        return Audit::query()
+        $auditModel = config('audit.implementation', Audit::class);
+
+        return $auditModel::query()
             ->where(function ($query) use ($relatedAuditsMap) {
                 $query->where('auditable_type', $this->record->getMorphClass())
                     ->where('auditable_id', $this->record->getKey());
@@ -98,7 +107,7 @@ new class extends Component {
                     }
                 }
             })
-            ->latest()
+            ->latest($orderColumn)
             ->take($this->perPage)
             ->get();
     }
@@ -171,9 +180,15 @@ new class extends Component {
 
                 <!-- Date/Time Header -->
                 <div class="mb-2 text-sm font-normal text-gray-400 dark:text-gray-500">
-                    {{ $audit->created_at->diffForHumans() }}
-                    <span class="mx-1">&bull;</span>
-                    <span class="text-gray-500 dark:text-gray-400 font-medium">{{ $audit->user->name ?? 'System' }}</span>
+                    @php
+                        $createdAtColumn = \Blackbox\FilamentBlackbox\Support\AuditableAttributes::auditCreatedAtColumn($audit);
+                        $createdAt = $createdAtColumn ? $audit->getAttribute($createdAtColumn) : null;
+                    @endphp
+                    @if($createdAt)
+                        {{ $createdAt->diffForHumans() }}
+                        <span class="mx-1">&bull;</span>
+                    @endif
+                    <span class="text-gray-500 dark:text-gray-400 font-medium">{{ \Blackbox\FilamentBlackbox\Support\UserLabel::forAudit($audit) }}</span>
                     <span class="mx-1">&bull;</span>
 
                     @if($url = $this->getBadgeUrl($audit))

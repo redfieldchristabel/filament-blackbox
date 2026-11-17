@@ -32,8 +32,12 @@
 
                             <div class="mb-2 text-sm text-gray-400 flex justify-between items-center">
                                 <div class="flex items-center gap-3">
-                                    <span>{{ $audit->created_at->diffForHumans() }} &bull;
-                                        {{ $audit->user->name ?? 'System' }}</span>
+                                    @php
+                                        $createdAtColumn = \Blackbox\FilamentBlackbox\Support\AuditableAttributes::auditCreatedAtColumn($audit);
+                                        $createdAt = $createdAtColumn ? $audit->getAttribute($createdAtColumn) : null;
+                                    @endphp
+                                    <span>@if($createdAt){{ $createdAt->diffForHumans() }} &bull; @endif
+                                        {{ \Blackbox\FilamentBlackbox\Support\UserLabel::forAudit($audit) }}</span>
 
                                     {{-- Resource Badge --}}
                                     @php

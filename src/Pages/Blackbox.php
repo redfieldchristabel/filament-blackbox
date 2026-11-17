@@ -67,15 +67,13 @@ class Blackbox extends Page implements HasActions, HasSchemas
             ->columns(4)
             ->statePath('data')
             ->components([
-                // 1. Get Users dynamically using the Auth provider's model
+                // 1. Users are searched server-side through the configured resolver
+                //    (`blackbox.users.resolver`), never loaded all at once.
                 Select::make('users')
-                    ->options(function () {
-                        $userModel = config('auth.providers.users.model');
-
-                        return $userModel::all()->pluck('name', 'id'); // Use a standard 'name' or 'email'
-                    })
                     ->multiple()
                     ->searchable()
+                    ->getSearchResultsUsing(fn (string $search): array => app(FilamentBlackbox::class)->userResolver()->search($search))
+                    ->getOptionLabelsUsing(fn (array $values): array => app(FilamentBlackbox::class)->userResolver()->labels($values))
                     ->placeholder('Select user...'),
 
                 // 2. Pull Resource Types from your published config
@@ -90,12 +88,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
 
                 // 3. Events stay static as they are defined by the Audit package
                 Select::make('events')
-                    ->options([
-                        'created' => 'Created',
-                        'updated' => 'Updated',
-                        'deleted' => 'Deleted',
-                        'sync' => 'Sync',
-                    ])
+                    ->options(static::getEventOptions())
                     ->multiple()
                     ->placeholder('Select event...'),
 
@@ -113,6 +106,20 @@ class Blackbox extends Page implements HasActions, HasSchemas
                         ->minDate(fn (Get $get) => $get('created_from')),
                 ])->columns(2),
             ])->live();
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public static function getEventOptions(): array
+    {
+        return [
+            'created' => 'Created',
+            'updated' => 'Updated',
+            'deleted' => 'Deleted',
+            'restored' => 'Restored',
+            'sync' => 'Sync',
+        ];
     }
 
     public function getAudits()

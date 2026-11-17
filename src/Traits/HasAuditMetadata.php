@@ -2,17 +2,20 @@
 
 namespace Blackbox\FilamentBlackbox\Traits;
 
-use OwenIt\Auditing\Models\Audit;
+use Illuminate\Database\Eloquent\Model;
+use OwenIt\Auditing\Contracts\Audit as AuditContract;
 use Throwable;
 
-/**
- * @param  Audit&object{auditable_type: string, auditable_id: int|string}  $audit
- */
 trait HasAuditMetadata
 {
-    public function getBadgeColor(Audit $audit): string
+    /**
+     * The configured `audit.implementation` model — any Eloquent model
+     * implementing owen-it's Audit contract, not only the default model.
+     *
+     * @param  Model&AuditContract  $audit
+     */
+    public function getBadgeColor(Model $audit): string
     {
-
         /** @var array<string, mixed> $resources */
         $resources = config('blackbox.resources', []);
 
@@ -22,7 +25,10 @@ trait HasAuditMetadata
         return (string) ($resourceConfig['badge_class'] ?? $resources['default']['badge_class'] ?? 'fi-color-gray');
     }
 
-    public function getBadgeLabel(Audit $audit): string
+    /**
+     * @param  Model&AuditContract  $audit
+     */
+    public function getBadgeLabel(Model $audit): string
     {
         /** @var array<string, mixed> $resources */
         $resources = config('blackbox.resources', []);
@@ -34,10 +40,14 @@ trait HasAuditMetadata
         return $label . ' #' . $audit->getAttribute('auditable_id');
     }
 
-    public function getBadgeUrl(Audit $audit): ?string
+    /**
+     * @param  Model&AuditContract  $audit
+     */
+    public function getBadgeUrl(Model $audit): ?string
     {
-        // 1. Check if the model still exists to prevent 404s
-        if ($audit->auditable === null) {
+        // 1. Check if the model still exists to prevent 404s (lazy-loads the
+        //    auditable relation, the way `$audit->auditable` would)
+        if ($audit->getRelationValue('auditable') === null) {
             return null;
         }
 

@@ -8,6 +8,7 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
 /**
@@ -18,7 +19,7 @@ class BlackboxActionHost extends Component implements HasActions, HasSchemas
     use InteractsWithActions;
     use InteractsWithSchemas;
 
-    public AuditedPost $record;
+    public Model $record;
 
     public function blackboxAction(): Action
     {

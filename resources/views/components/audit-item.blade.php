@@ -7,7 +7,6 @@ use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Contracts\HasSchemas;
-use OwenIt\Auditing\Models\Audit;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Grid;
@@ -15,21 +14,70 @@ use Filament\Schemas\Components\Group;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Actions\Action;
+use Filament\Facades\Filament;
 use Filament\Support\Icons\Heroicon;
 use Filament\Support\Enums\FontWeight;
 use Filament\Support\Enums\TextSize;
 use Filament\Notifications\Notification;
+use Blackbox\FilamentBlackbox\Support\AuditableAttributes;
+use Blackbox\FilamentBlackbox\Support\UserLabel;
+use Blackbox\FilamentBlackbox\Exceptions\ProtectedAttributeTransitionException;
+use Illuminate\Support\Facades\Log;
+use OwenIt\Auditing\Contracts\Audit as AuditContract;
+use OwenIt\Auditing\Exceptions\AuditableTransitionException;
 
 new class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
     use InteractsWithSchemas;
 
-    public Audit $audit;
+    /**
+     * The only refusal detail the UI shows when applying the audit would
+     * touch a protected (excluded/hidden) attribute: no attribute names, no
+     * values — those stay on the exception for logs.
+     */
+    protected const PROTECTED_TRANSITION_MESSAGE = "This change can't be reverted because it would modify protected fields.";
+
+    /**
+     * The only refusal detail the UI shows when owen-it itself refuses the
+     * transition (type/id mismatch, attribute incompatibilities, redactor):
+     * the real message may name attributes, so it goes to the log only.
+     */
+    protected const REFUSED_TRANSITION_MESSAGE = "This audit can't be applied to the current record.";
+
+    /**
+     * Log an owen-it refusal with everything a human needs; nothing here
+     * reaches the UI.
+     */
+    protected function logRefusedTransition(AuditableTransitionException $exception): void
+    {
+        Log::warning('Blackbox: audit transition refused — ' . $exception->getMessage(), [
+            'incompatibilities' => $exception->getIncompatibilities(),
+            'audit_id' => $this->audit->getKey(),
+            'auditable_type' => $this->audit->getAttribute('auditable_type'),
+            'auditable_id' => $this->audit->getAttribute('auditable_id'),
+        ]);
+    }
+
+    /**
+     * The configured `audit.implementation` model — any Eloquent model
+     * implementing owen-it's Audit contract, not only the default model.
+     *
+     * @var Model&AuditContract
+     */
+    public Model $audit;
 
     public ?Model $model;
 
-    public function mount(Audit $audit)
+    public function mount(Model $audit)
     {
+        if (! $audit instanceof AuditContract) {
+            throw new \InvalidArgumentException(sprintf(
+                'The audit must be an Eloquent model implementing [%s] (the configured `audit.implementation`), got [%s].',
+                AuditContract::class,
+                $audit::class,
+            ));
+        }
+
         $this->audit = $audit;
         
         $model = $audit->auditable;
@@ -44,6 +92,119 @@ new class extends Component implements HasActions, HasSchemas {
         $this->model = $model;
     }
 
+    /**
+     * Revert (old state) / Recover (new state) are only offered for `updated` audits, when
+     * the user may update the model and at least one attribute the model's CURRENT owen-it
+     * rules still allow would change.
+     */
+    protected function canTransition(bool $old): bool
+    {
+        return $this->model
+            && \blackboxCheck('update', $this->model)
+            && $this->audit->event === 'updated'
+            && AuditableAttributes::canTransition($this->model, $this->audit, $old);
+    }
+
+    /**
+     * Preview of what Revert/Recover would change, computed on a throwaway copy of the
+     * model through owen-it's transitionTo() with a filtered copy of the audit.
+     */
+    protected function previewTransition(bool $old)
+    {
+        if (! $this->model) {
+            return null;
+        }
+
+        $model = clone $this->model;
+
+        try {
+            AuditableAttributes::transition($model, $this->audit, $old);
+        } catch (ProtectedAttributeTransitionException $exception) {
+            // A generic refusal only: the protected attribute names and values
+            // stay on the exception for logs, never in the UI.
+            $this->logRefusedTransition($exception);
+
+            return view('filament-blackbox::components.audit-diff-modal', [
+                'diff' => [],
+                'error' => self::PROTECTED_TRANSITION_MESSAGE,
+            ]);
+        } catch (AuditableTransitionException $exception) {
+            // owen-it's own message may name attributes — log it, show only
+            // the generic refusal.
+            $this->logRefusedTransition($exception);
+
+            return view('filament-blackbox::components.audit-diff-modal', [
+                'diff' => [],
+                'error' => self::REFUSED_TRANSITION_MESSAGE,
+            ]);
+        }
+
+        $diff = [];
+
+        foreach ($model->getDirty() as $attribute => $newValue) {
+            // A setter on an allowed field can dirty an excluded one (transition()
+            // refuses those), and the preview must never render an excluded dirty
+            // key either way.
+            if (! AuditableAttributes::isAuditable($model, $attribute)) {
+                continue;
+            }
+
+            $diff[] = [
+                'attribute' => $attribute,
+                // The model came fresh from the database, so the original is the current state.
+                'current' => $model->getOriginal($attribute),
+                'new' => $newValue,
+            ];
+        }
+
+        return view('filament-blackbox::components.audit-diff-modal', ['diff' => $diff]);
+    }
+
+    protected function applyTransition(bool $old, string $title, string $body): void
+    {
+        $model = $this->model;
+
+        if (! $model) {
+            return;
+        }
+
+        try {
+            AuditableAttributes::transition($model, $this->audit, $old);
+        } catch (ProtectedAttributeTransitionException $exception) {
+            // Same generic refusal as the preview: no protected attribute
+            // names or values reach the notification either.
+            $this->logRefusedTransition($exception);
+
+            Notification::make()
+                ->title('Could not apply this audit')
+                ->body(self::PROTECTED_TRANSITION_MESSAGE)
+                ->danger()
+                ->send();
+
+            return;
+        } catch (AuditableTransitionException $exception) {
+            // Generic refusal only: owen-it's message (and any attribute
+            // names in it) goes to the log.
+            $this->logRefusedTransition($exception);
+
+            Notification::make()
+                ->title('Could not apply this audit')
+                ->body(self::REFUSED_TRANSITION_MESSAGE)
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $model->save();
+
+        Notification::make()
+            ->title($title)
+            ->body($body)
+            ->success()
+            ->send();
+    }
+
     public function content(Schema $schema): Schema
     {
 
@@ -52,7 +213,9 @@ new class extends Component implements HasActions, HasSchemas {
         $canView = $this->model && \blackboxCheck('view', $this->model);
 
         if ($canView) {
-            foreach ($this->audit->getModified() as $attribute => $value) {
+            // Only what the model's CURRENT owen-it rules still allow: rows written before a
+            // field was excluded (password, remember_token, hidden fields) still hold its value.
+            foreach (AuditableAttributes::modified($this->model, $this->audit) as $attribute => $value) {
                 $old = $value['field']['old'] ?? $value['old'] ?? null;
                 $new = $value['field']['new'] ?? $value['new'] ?? null;
 
@@ -142,42 +305,26 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->hiddenLabel()
                                 ->circular()
                                 ->size(40)
-                                ->state(function () {
+                                ->state(function (): ?string {
                                     $user = $this->audit->user;
 
-                                    if (!$user) {
-                                        return null; // Will show default placeholder/initials
+                                    // A system audit has no user: no avatar at all.
+                                    if (! $user instanceof Model) {
+                                        return null;
                                     }
 
-                                    // 1. Check if the model has the Filament avatar method
-                                    if (method_exists($user, 'getFilamentAvatarUrl')) {
-                                        return $user->getFilamentAvatarUrl();
-                                    }
-
-                                    // 3. Let Filament handle the fallback (UI Avatars)
-                                    return null;
-                                })
-                                ->defaultImageUrl(fn($state) => "https://ui-avatars.com/api/?name=" . urlencode($this->audit->user->name ?? 'S') . "&color=FFFFFF&background=111827"),
+                                    // Filament's own resolution: HasAvatar::
+                                    // getFilamentAvatarUrl(), else `avatar_url`,
+                                    // else the panel's default avatar provider.
+                                    return Filament::getUserAvatarUrl($user);
+                                }),
                             Group::make([
                                 TextEntry::make('user')
-                                    ->formatStateUsing(function ($state) {
-                                        // $state is the User model (or null if no user)
-                                        if (!$state) {
-                                            return 'System'; // or whatever fallback you want for system/no-user actions
-                                        }
-
-                                        // Check if the method exists (safest way, no interface assumption needed)
-                                        if (method_exists($state, 'getFilamentName')) {
-                                            return $state->getFilamentName();
-                                        }
-
-                                        // Fallback to ->name attribute (common default in Filament & Laravel)
-                                        return $state->name ?? 'Unknown User';
-                                    })
+                                    ->state(fn () => UserLabel::forAudit($this->audit))
                                     ->hiddenLabel()
                                     ->weight(FontWeight::Bold)
                                     ->placeholder('System'),
-                                TextEntry::make('created_at')
+                                TextEntry::make(AuditableAttributes::auditCreatedAtColumn($this->audit) ?? 'audit_timestamp')
                                     ->hiddenLabel()
                                     ->size(TextSize::Small)
                                     ->color('gray')
@@ -206,48 +353,9 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Revert to the state before these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
-                                ->modalContent(function () {
-                                    $model = $this->model;
-                                    if (!$model) {
-                                        return null;
-                                    }
-
-                                    // Current state is in $model
-                                    // Transition to old state (true for $old)
-                                    $model->transitionTo($this->audit, true);
-
-                                    $diff = [];
-                                    foreach ($model->getDirty() as $attribute => $newValue) {
-                                        $diff[] = [
-                                            'attribute' => $attribute,
-                                            'current' => $model->getOriginal($attribute), // This gets the value BEFORE the transition (since we haven't synced original)
-                                            'new' => $newValue,
-                                        ];
-                                    }
-
-                                    // Actually, transitionTo might sync original or not?
-                                    // transitionTo sets attributes. getDirty() compares attributes to original.
-                                    // $model was fresh from DB, so original is DB state.
-                                    // attributes are updated state.
-                        
-                                    return view('filament-blackbox::components.audit-diff-modal', ['diff' => $diff]);
-                                })
-                                ->action(function () {
-
-                                    $model = $this->model;
-
-                                    if ($model) {
-                                        $model->transitionTo($this->audit, true);
-
-                                        $model->save();
-                                        Notification::make()
-                                            ->title('Reverted successfully')
-                                            ->body('The model has been reverted successfully.')
-                                            ->success()
-                                            ->send();
-                                    }
-                                }),
+                                ->visible(fn(): bool => $this->canTransition(true))
+                                ->modalContent(fn () => $this->previewTransition(true))
+                                ->action(fn () => $this->applyTransition(true, 'Reverted successfully', 'The model has been reverted successfully.')),
 
                             Action::make('recover')
                                 ->label('Recover')
@@ -255,41 +363,9 @@ new class extends Component implements HasActions, HasSchemas {
                                 ->color('danger')
                                 ->tooltip('Restore the state after these changes')
                                 ->requiresConfirmation()
-                                ->visible(fn(): bool => $this->model && \blackboxCheck('update', $this->model) && $this->audit->event === 'updated')
-                                ->modalContent(function () {
-                                    $model = $this->model;
-                                    if (!$model) {
-                                        return null;
-                                    }
-
-                                    $model->transitionTo($this->audit);
-
-                                    $diff = [];
-                                    foreach ($model->getDirty() as $attribute => $newValue) {
-                                        $diff[] = [
-                                            'attribute' => $attribute,
-                                            'current' => $model->getOriginal($attribute),
-                                            'new' => $newValue,
-                                        ];
-                                    }
-
-                                    return view('filament-blackbox::components.audit-diff-modal', ['diff' => $diff]);
-                                })
-                                ->action(function () {
-
-                                    $model = $this->model;
-
-                                    if ($model) {
-                                        $model->transitionTo($this->audit);
-
-                                        $model->save();
-                                        Notification::make()
-                                            ->title('Recover successfully')
-                                            ->body('The model has been recovered successfully.')
-                                            ->success()
-                                            ->send();
-                                    }
-                                }),
+                                ->visible(fn(): bool => $this->canTransition(false))
+                                ->modalContent(fn () => $this->previewTransition(false))
+                                ->action(fn () => $this->applyTransition(false, 'Recover successfully', 'The model has been recovered successfully.')),
                             Action::make('restore')
                                 ->label('Restore')
                                 ->icon(Heroicon::ArrowPath)

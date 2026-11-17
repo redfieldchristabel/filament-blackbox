@@ -36,7 +36,5 @@ class BlackboxAction extends Action
         $this->modalSubmitAction(false);
         $this->modalCancelAction(false);
         $this->modalAutofocus(false);
-
-        $this->tooltip('saya tooltip');
     }
 }

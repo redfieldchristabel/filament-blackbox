@@ -1,4 +1,8 @@
-@if (empty($diff))
+@if (! empty($error))
+    <div class="text-sm text-red-600 dark:text-red-400">
+        {{ $error }}
+    </div>
+@elseif (empty($diff))
     <div class="text-sm text-gray-500 dark:text-gray-400">
         No changes will be applied.
     </div>

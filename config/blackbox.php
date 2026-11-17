@@ -1,5 +1,7 @@
 <?php
 
+use Blackbox\FilamentBlackbox\Support\DefaultUserResolver;
+
 /**
  * Filament Blackbox Configuration
  */
@@ -37,6 +39,14 @@ return [
     | VALUE: A comma-separated string of nested relationships to eager load
     |        (e.g., 'user,avatar'). If no sub-relations are needed, leave EMPTY ('').
     |
+    | Indexed entries are accepted too: ['profile', 'posts'] is the same as
+    | ['profile' => '', 'posts' => '']. When the 'relations' key is absent, the
+    | model's own auditRelations() method (same array shape) is used if it exists.
+    |
+    | Which attributes are shown, reverted or recovered is NOT configured here:
+    | it comes from your owen-it model config (auditExclude, auditInclude,
+    | auditStrict, auditTimestamps, hidden / visible).
+    |
     */
     'resources' => [
 
@@ -59,6 +69,54 @@ return [
             'badge_class' => 'fi-color-gray',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Users (filter and labels)
+    |--------------------------------------------------------------------------
+    |
+    | The audit user is resolved the owen-it way: the audit's `user` morph, which
+    | follows `audit.user.morph_prefix` in your config/audit.php. Nothing here
+    | assumes a `users` table or a `name` column.
+    |
+    | Labels use Filament's own `Filament::getUserName()` (the `HasName`
+    | contract — `getFilamentName()`, else the `name` attribute), then `#id`
+    | only when that yields nothing. 'System' is shown only when an audit has
+    | no user.
+    |
+    | 'resolver':
+    | Class-string of a class implementing
+    | \Blackbox\FilamentBlackbox\Contracts\UserResolver (search(string): array and
+    | labels(array $ids): array, both returning [id => label]). It powers the
+    | server-side searchable user filter. Class-strings only, so the config stays
+    | cacheable (config:cache). The default offers the user model of EVERY guard
+    | in audit.user.guards, and keys each option by the audit's own user morph
+    | (<user_type>:<user_id> as owen-it stores it), so users of different user
+    | models with the same id stay distinguishable.
+    |
+    | 'search_columns':
+    | Columns the default resolver searches. Columns the user table does not have
+    | are skipped.
+    |
+    */
+    'users' => [
+        'resolver' => DefaultUserResolver::class,
+        'search_columns' => ['name', 'email'],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Authorization Without a Policy
+    |--------------------------------------------------------------------------
+    |
+    | Blackbox checks the model's policy before showing a record's audits or
+    | letting someone Revert / Recover / Restore. When a model has NO policy
+    | registered, this decides the outcome: true (default, the behaviour of
+    | v0.0.x) allows it, false denies it. Models that have a policy always go
+    | through the policy.
+    |
+    */
+    'authorize_without_policy' => true,
 
     /*
     |--------------------------------------------------------------------------
