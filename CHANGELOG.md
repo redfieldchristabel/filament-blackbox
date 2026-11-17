@@ -2,7 +2,7 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
-## Unreleased
+## v0.0.11 - 2026-11-17
 
 ### Changed
 
