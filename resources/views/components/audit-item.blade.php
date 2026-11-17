@@ -45,6 +45,13 @@ new class extends Component implements HasActions, HasSchemas {
     protected const REFUSED_TRANSITION_MESSAGE = "This audit can't be applied to the current record.";
 
     /**
+     * The only refusal detail the UI shows when the server-side re-check
+     * refuses the action (ability, event, record state): the reason is not
+     * disclosed — only that the action is no longer available.
+     */
+    protected const UNAVAILABLE_ACTION_MESSAGE = 'This action is no longer available for this record.';
+
+    /**
      * Log an owen-it refusal with everything a human needs; nothing here
      * reaches the UI.
      */
@@ -93,16 +100,35 @@ new class extends Component implements HasActions, HasSchemas {
     }
 
     /**
-     * Revert (old state) / Recover (new state) are only offered for `updated` audits, when
-     * the user may update the model and at least one attribute the model's CURRENT owen-it
-     * rules still allow would change.
+     * The server-side re-check behind Revert / Recover. The action's
+     * `visible()` is never trusted on its own: a direct call to
+     * applyTransition() / previewTransition() must be refused the same way.
+     * Checked here, once, right before anything is previewed or saved:
+     * - the auditable record still exists,
+     * - the user may still update it (blackboxCheck against the model's policy),
+     * - the audit is an `updated` one,
+     * - Recover is additionally refused while the record is soft-deleted —
+     *   coming back is the Restore action's job,
+     * - at least one auditable attribute would still change.
      */
     protected function canTransition(bool $old): bool
     {
-        return $this->model
-            && \blackboxCheck('update', $this->model)
-            && $this->audit->event === 'updated'
-            && AuditableAttributes::canTransition($this->model, $this->audit, $old);
+        $model = $this->model;
+
+        if (! $model) {
+            return false;
+        }
+
+        if ($this->audit->event !== 'updated') {
+            return false;
+        }
+
+        if (! $old && method_exists($model, 'trashed') && $model->trashed()) {
+            return false;
+        }
+
+        return \blackboxCheck('update', $model)
+            && AuditableAttributes::canTransition($model, $this->audit, $old);
     }
 
     /**
@@ -111,7 +137,8 @@ new class extends Component implements HasActions, HasSchemas {
      */
     protected function previewTransition(bool $old)
     {
-        if (! $this->model) {
+        // Server-side re-check: the action's visible() is not trusted here.
+        if (! $this->canTransition($old)) {
             return null;
         }
 
@@ -162,11 +189,23 @@ new class extends Component implements HasActions, HasSchemas {
 
     protected function applyTransition(bool $old, string $title, string $body): void
     {
-        $model = $this->model;
+        // Server-side re-check: the action's visible() is not trusted here.
+        // Unauthorised users, non-updated audits, a soft-deleted record on
+        // Recover and fully excluded transitions are refused before anything
+        // is saved — with a refusal notification, so a click that can no
+        // longer do anything (e.g. the permission changed after the page
+        // rendered) is never silent.
+        if (! $this->canTransition($old)) {
+            Notification::make()
+                ->title('Action not available')
+                ->body(self::UNAVAILABLE_ACTION_MESSAGE)
+                ->danger()
+                ->send();
 
-        if (! $model) {
             return;
         }
+
+        $model = $this->model;
 
         try {
             AuditableAttributes::transition($model, $this->audit, $old);
@@ -201,6 +240,43 @@ new class extends Component implements HasActions, HasSchemas {
         Notification::make()
             ->title($title)
             ->body($body)
+            ->success()
+            ->send();
+    }
+
+    /**
+     * Restore of a soft-deleted record, re-checked server-side: the action's
+     * `visible()` is not trusted here either, so a direct call is refused the
+     * same way. Restoring needs the record still soft-deleted, the audit to
+     * be its `deleted` one, and the user still allowed to restore.
+     */
+    protected function applyRestore(): void
+    {
+        $model = $this->model;
+
+        if (
+            ! $model
+            || ! method_exists($model, 'trashed')
+            || ! method_exists($model, 'restore')
+            || ! $model->trashed()
+            || $this->audit->event !== 'deleted'
+            || ! \blackboxCheck('restore', $model)
+        ) {
+            // Same refusal feedback as Revert / Recover: never silent.
+            Notification::make()
+                ->title('Action not available')
+                ->body(self::UNAVAILABLE_ACTION_MESSAGE)
+                ->danger()
+                ->send();
+
+            return;
+        }
+
+        $model->restore();
+
+        Notification::make()
+            ->title('Restored successfully')
+            ->body('The record has been restored successfully.')
             ->success()
             ->send();
     }
@@ -379,16 +455,7 @@ new class extends Component implements HasActions, HasSchemas {
                                     $this->audit->event === 'deleted' && 
                                     \blackboxCheck('restore', $this->model)
                                 )
-                                ->action(function () {
-                                    if ($this->model && method_exists($this->model, 'restore')) {
-                                        $this->model->restore();
-                                        Notification::make()
-                                            ->title('Restored successfully')
-                                            ->body('The record has been restored successfully.')
-                                            ->success()
-                                            ->send();
-                                    }
-                                }),
+                                ->action(fn () => $this->applyRestore()),
                         ])->alignEnd(),
                     ]),
 

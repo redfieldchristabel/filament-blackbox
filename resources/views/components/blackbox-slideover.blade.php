@@ -1,9 +1,10 @@
 <?php
 
 use Livewire\Component;
-use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Infolists\Concerns\InteractsWithInfolists;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
 use Illuminate\Database\Eloquent\Model;
 use OwenIt\Auditing\Models\Audit;
 use OwenIt\Auditing\Contracts\Auditable;
@@ -12,10 +13,9 @@ use Blackbox\FilamentBlackbox\Support\AuditRelations;
 use Blackbox\FilamentBlackbox\Support\AuditableAttributes;
 
 
-new class extends Component {
-    use InteractsWithForms;
+new class extends Component implements HasActions, HasSchemas {
     use InteractsWithActions;
-    use InteractsWithInfolists;
+    use InteractsWithSchemas;
     use HasAuditMetadata;
 
 
@@ -40,15 +40,24 @@ new class extends Component {
 
         // Order by the audit model's own created-at column (renamed timestamp
         // columns supported); fall back to the primary key when it has none.
-        $createdAtColumn = AuditableAttributes::auditCreatedAtColumn($nativeAudits->getModel());
-        $orderColumn = $createdAtColumn ?? $nativeAudits->getModel()->getKeyName();
+        // The audit key is the tiebreaker: audits written in the same second
+        // keep a stable order instead of paging arbitrarily. Both columns
+        // are table-qualified so the order stays unambiguous.
+        $auditModelInstance = $nativeAudits->getModel();
+        $createdAtColumn = AuditableAttributes::auditCreatedAtColumn($auditModelInstance);
+        $keyName = $auditModelInstance->qualifyColumn($auditModelInstance->getKeyName());
+        $orderColumn = $createdAtColumn !== null ? $auditModelInstance->qualifyColumn($createdAtColumn) : $keyName;
 
         // 2. Relations come from `blackbox.resources.<Model>.relations`, falling back to
         //    the model's auditRelations() method; associative and indexed entries both work.
         $relations = AuditRelations::for($this->record);
 
         if (empty($relations)) {
-            return $nativeAudits->latest($orderColumn)->take($this->perPage)->get();
+            return $nativeAudits
+                ->orderBy($orderColumn, 'desc')
+                ->when($orderColumn !== $keyName, fn ($query) => $query->orderBy($keyName, 'desc'))
+                ->take($this->perPage)
+                ->get();
         }
 
         // Prepare relations to load (Eager Loading to prevent N+1)
@@ -107,7 +116,8 @@ new class extends Component {
                     }
                 }
             })
-            ->latest($orderColumn)
+            ->orderBy($orderColumn, 'desc')
+            ->when($orderColumn !== $keyName, fn ($query) => $query->orderBy($keyName, 'desc'))
             ->take($this->perPage)
             ->get();
     }

@@ -114,6 +114,13 @@ class TestCase extends Orchestra
             $table->timestamps();
         });
 
+        Schema::create('trashed_articles', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->softDeletes();
+            $table->timestamps();
+        });
+
         Schema::create('audited_comments', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('audited_post_id');

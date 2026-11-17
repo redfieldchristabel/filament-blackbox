@@ -11,7 +11,7 @@ use Blackbox\FilamentBlackbox\Tests\Support\SecureAccount;
 use Blackbox\FilamentBlackbox\Tests\Support\TaggedAudit;
 use Blackbox\FilamentBlackbox\Tests\Support\User;
 use Filament\Facades\Filament;
-use Filament\Notifications\NotificationMailbox;
+use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\ViewException;
 use Livewire\Livewire;
@@ -229,14 +229,17 @@ it('shows a generic refusal when owen-it refuses the transition and logs the rea
             && $context['incompatibilities'] === ['ghost_key'],
     );
 
-    // The notification on apply discloses nothing either, and nothing is saved.
+    // The notification on apply discloses nothing either — its exact body is
+    // the generic refusal (no owen-it message, no key or value names),
+    // asserted through Filament's public testing API — and nothing is saved.
     (fn () => $this->applyTransition(true, 'Reverted', 'done'))->call($instance);
 
-    $pending = (fn () => $this->pendingNotifications)->call(app(NotificationMailbox::class));
+    Notification::assertNotified(
+        Notification::make()
+            ->title('Could not apply this audit')
+            ->body("This audit can't be applied to the current record.")
+            ->danger(),
+    );
 
-    expect(json_encode($pending))
-        ->toContain('applied to the current record')
-        ->not->toContain('ghost_key')
-        ->not->toContain('ghost-value')
-        ->and($this->post->fresh()->title)->toBe('Renamed title');
+    expect($this->post->fresh()->title)->toBe('Renamed title');
 });

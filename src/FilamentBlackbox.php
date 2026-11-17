@@ -91,9 +91,21 @@ class FilamentBlackbox
             }
         }
 
-        // Order by the audit model's own created-at column; a model without a
-        // timestamp column falls back to its primary key.
-        return $query->latest($createdAtColumn ?? $audit->getKeyName())->cursorPaginate($perPage);
+        // Order by the audit model's own created-at column first (renamed
+        // timestamp columns supported); a model without a timestamp column
+        // falls back to its primary key. The audit key is the tiebreaker so
+        // audits written in the same second keep a stable order and cursor
+        // pagination never skips or repeats them — the cursor then carries
+        // both columns. Both are table-qualified so the order stays
+        // unambiguous if the query ever gains a join.
+        $qualifiedKey = $audit->qualifyColumn($audit->getKeyName());
+        $orderColumn = $createdAtColumn !== null ? $audit->qualifyColumn($createdAtColumn) : $qualifiedKey;
+
+        $query
+            ->orderBy($orderColumn, 'desc')
+            ->when($orderColumn !== $qualifiedKey, fn ($query) => $query->orderBy($qualifiedKey, 'desc'));
+
+        return $query->cursorPaginate($perPage);
     }
 
     /**

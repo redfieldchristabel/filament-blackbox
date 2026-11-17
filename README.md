@@ -276,6 +276,27 @@ public function auditRelations(): array
 }
 ```
 
+## Upgrade notes / owen-it versions
+
+Blackbox builds on owen-it/laravel-auditing and follows its `^14.0` releases. One upstream change (PR #1050) is worth knowing about, because it changes what happens in the console contexts of the consuming app. Only two versions were actually checked here: 14.0.3 (read from the upstream source) and 14.0.7 (the installed version). 14.0.4 to 14.0.6 were not checked individually.
+
+- **14.0.3 (read from the upstream v14.0.3 source)**: `bootAuditable()` registers the model observer only when `isAuditingEnabled()` is true — in the console (commands, queue workers, seeders, tests) that additionally required `audit.console = true` (`src/Auditable.php:80`, `isAuditingEnabled()` at `src/Auditable.php:552-559`). It was not run against 14.0.3.
+- **14.0.7 (verified against the installed package)**: `bootAuditable()` registers the observer whenever `audit.enabled` is on, regardless of `audit.console` (`src/Auditable.php:80`; the observer's `dispatchAudit()` re-checks `isAuditingEnabled()` at `src/AuditableObserver.php:98`).
+
+What that means in practice on 14.0.7 (verified against the installed package):
+
+- With `audit.console = false`, console saves still record **no** audit rows — the observer's own dispatch re-checks `isAuditingEnabled()` before auditing, so the rows you see are unchanged.
+- The observer nevertheless now *fires* on every model event in the console: it calls `setAuditEvent()` on the instance, and owen-it never resets that property after a save — a model instance carries the name of its last audit event around (in web requests this was already the case).
+- If you rely on `$model->auditEvent` staying `null` after console saves, or want the 14.0.3 observer behaviour back exactly, pin exactly `"owen-it/laravel-auditing": "14.0.3"` (or `">=14.0.3 <14.0.4"`) in the consuming app. Do not use a tilde range for this: it also allows 14.0.4 to 14.0.7, and 14.0.7 has the new behaviour. Pinning gives up every later 14.0.x fix, so only do it if you need the old observer behaviour.
+
+What to check after upgrading owen-it in your app:
+
+- `config/audit.php`: `audit.console` decides whether queue workers and other console processes record audits — decide deliberately instead of leaving it to the default (`false`).
+- With `audit.console = true`, command, queue and test activity appears on Blackbox timelines too.
+- Your test suite runs in the console: with `audit.console = false`, models saved in tests write no audits and Blackbox timelines render empty; with `true`, they do.
+
+Blackbox itself keeps its `^14.0` constraint: it uses no API that only exists in 14.0.4+. The console behaviour for both `audit.console` values is pinned by the package's own test suite (`tests/Feature/ConsoleAuditBehaviourTest.php`), which runs against the installed 14.0.x (14.0.7 at the time of writing, not 14.0.3), so a future upstream change breaks Blackbox CI, not your app.
+
 ## Testing
 
 ```bash

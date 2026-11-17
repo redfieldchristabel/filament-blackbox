@@ -15,7 +15,7 @@ use Blackbox\FilamentBlackbox\Tests\Support\SecureAccount;
 use Blackbox\FilamentBlackbox\Tests\Support\TestEnum;
 use Blackbox\FilamentBlackbox\Tests\Support\VisibleArticle;
 use Filament\Facades\Filament;
-use Filament\Notifications\NotificationMailbox;
+use Filament\Notifications\Notification;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Stringable;
 use Livewire\Livewire;
@@ -314,17 +314,17 @@ it('never renders an excluded dirty key in the preview and refuses the save', fu
         ->not->toContain('token-for-Current')
         ->not->toContain('Old Name');
 
-    // The action refuses too: the record is untouched, and the notification
-    // discloses nothing about the protected fields either.
+    // The action refuses too: the record is untouched, and the notification's
+    // exact body is the generic refusal (no protected attribute name or value
+    // in it), asserted through Filament's public testing API.
     (fn () => $this->applyTransition(true, 'Reverted', 'done'))->call($instance);
 
-    $pending = (fn () => $this->pendingNotifications)->call(app(NotificationMailbox::class));
-
-    expect($pending)->not->toBeEmpty()
-        ->and(json_encode($pending))->toContain('modify protected fields')
-        ->not->toContain('api_token')
-        ->not->toContain('token-for-Old Name')
-        ->not->toContain('token-for-Current');
+    Notification::assertNotified(
+        Notification::make()
+            ->title('Could not apply this audit')
+            ->body("This change can't be reverted because it would modify protected fields.")
+            ->danger(),
+    );
 
     expect($account->fresh()->getAttribute('name'))->toBe('Current')
         ->and($account->fresh()->getAttribute('api_token'))->toBe('token-for-Current');
@@ -426,18 +426,18 @@ it('hides and never restores keys outside the auditInclude list', function () {
         ->and($fresh->getAttribute('remember_token'))->toBe('keep-me');
 });
 
-// --- Round 5: memoised exclusions per model instance -------------------------
+// --- Round 6: exclusions are computed fresh, never memoised ------------------
 
-it('memoises exclusions per model instance and recomputes when its state or config changes', function () {
+it('recomputes exclusions on every lookup so rule changes are always reflected', function () {
     $bag = new ArrayBag;
     $bag->setRawAttributes(['name' => 'plain', 'meta' => ['nested' => 'value']]);
 
-    // Computed once, answered consistently.
+    // Answered consistently, however often the timeline asks.
     expect(in_array('meta', AuditableAttributes::excluded($bag), true))->toBeTrue()
         ->and(in_array('meta', AuditableAttributes::excluded($bag), true))->toBeTrue();
 
-    // The memoised list never freezes: the model's current attributes are part
-    // of the rules (the non scalar check), so a change recomputes — the same
+    // The model's current attributes are part of the rules (the non scalar
+    // check), so a change is reflected on the next lookup — the same
     // invalidation a transitionTo() causes. A config change is covered by the
     // `audit.allowed_array_values` test above, which flips it on one instance.
     $bag->setRawAttributes(['name' => 'plain', 'meta' => 'scalar now']);
@@ -445,32 +445,38 @@ it('memoises exclusions per model instance and recomputes when its state or conf
     expect(in_array('meta', AuditableAttributes::excluded($bag), true))->toBeFalse();
 });
 
-it('answers repeated exclusion lookups of one instance from the memo without recomputing the rules', function () {
-    // `getCreatedAtColumn()` is only read while the rules are computed (the
-    // timestamp opt-out), never on a memo hit — other rule inputs are
-    // re-fingerprinted by the stamp on every lookup, but this one is not —
-    // so its call count proves a cache hit. One computation probes it twice
-    // (condition + assignment inside the opt-out).
+it('never serialises the model to fingerprint exclusions, so closure attributes do not crash', function () {
+    // The removed memo fingerprinted the model's attributes with serialize():
+    // any non serialisable attribute value (a Closure) threw on EVERY lookup.
+    $bag = new ArrayBag;
+    $bag->setRawAttributes(['name' => 'plain', 'callback' => fn (): string => 'value']);
+
+    expect(in_array('callback', AuditableAttributes::excluded($bag), true))->toBeTrue()
+        ->and(AuditableAttributes::isAuditable($bag, 'callback'))->toBeFalse()
+        ->and(AuditableAttributes::isAuditable($bag, 'name'))->toBeTrue();
+});
+
+it('answers a filter() of any size with a single rule computation', function () {
+    // filter() computes the exclusion rules ONCE and reuses them for every
+    // key: `getCreatedAtColumn()` is only read while the rules are computed
+    // (the timestamp opt-out) — its call count proves how often that happened.
     $bag = new CountingBag;
     $bag->setRawAttributes(['name' => 'plain', 'meta' => ['nested' => 'value']]);
 
     CountingBag::$ruleComputations = 0;
 
-    expect(AuditableAttributes::excluded($bag))->toContain('meta')
-        ->and(CountingBag::$ruleComputations)->toBe(2);
+    AuditableAttributes::filter($bag, ['meta' => 'b']);
+    $afterOneKey = CountingBag::$ruleComputations;
 
-    $afterFirst = CountingBag::$ruleComputations;
+    // Guard the relative comparison below: it would pass vacuously (0 * 2 = 0)
+    // if the probe were never hit.
+    expect($afterOneKey)->toBeGreaterThan(0);
 
-    // Repeated lookups of the SAME instance are memo hits: the count does not
-    // move, however often the timeline asks.
-    expect(AuditableAttributes::excluded($bag))->toContain('meta')
-        ->and(AuditableAttributes::excluded($bag))->toContain('meta')
-        ->and(CountingBag::$ruleComputations)->toBe($afterFirst);
+    $filtered = AuditableAttributes::filter($bag, ['name' => 'a', 'meta' => 'b', 'other' => 'c', 'one more' => 'd']);
 
-    // A DIFFERENT instance has its own memo entry: it computes its own rules.
-    $other = new CountingBag;
-    $other->setRawAttributes(['name' => 'plain', 'meta' => ['nested' => 'value']]);
-
-    expect(AuditableAttributes::excluded($other))->toContain('meta')
-        ->and(CountingBag::$ruleComputations)->toBe($afterFirst + 2);
+    expect(array_keys($filtered))->toBe(['name', 'other', 'one more'])
+        // Relative, not pinned to the per-computation probe count: the
+        // four-key filter cost exactly what the one-key filter cost, so the
+        // rules are computed once per CALL, independent of its size.
+        ->and(CountingBag::$ruleComputations)->toBe($afterOneKey * 2);
 });

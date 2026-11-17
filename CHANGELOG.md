@@ -2,6 +2,23 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## Unreleased
+
+### Fixed
+
+* The `blackbox-slideover` Livewire component now implements Filament's `HasActions` / `HasSchemas` contracts (via Filament's own `InteractsWithActions` / `InteractsWithSchemas` traits) — any Livewire update after the first render (e.g. its own `loadMore()`) crashed with `Schema::make(): Argument #1 ($livewire) must be of type ?HasSchemas` (reported by the MIS audit, issue I-0005)
+* Setting `perPage` as the FIRST interaction on a freshly opened slide-over rendered an empty timeline — the user-visible effect of the failed first update: the first `perPage` change is the component's first Livewire update cycle, whose render died on the missing contracts above (reported by the MIS audit, issue I-0005)
+* Stable ordering: the page and slide-over timelines order by the audit model's created-at column and break ties on the audit key, and the cursor carries both columns — audits written in the same second no longer page arbitrarily under cursor pagination, so no rows are skipped or repeated across pages (reported by the MIS audit, issue I-0005)
+* The audit-item component re-checks Revert / Recover / Restore server-side (`applyTransition()`, `previewTransition()` and the Restore's `applyRestore()`) instead of trusting the action's `visible()`: the user's `update` / `restore` ability, the `updated` / `deleted` event, a non-soft-deleted record for Recover, and at least one remaining auditable attribute are enforced again right before anything is previewed or saved (deferred from the v0.0.12 review). A refused action now reports a generic "Action not available" danger notification instead of failing silently — a user whose permission changed after the page rendered sees why their click did nothing — and the tests exercise the real Livewire action path (mount + call) alongside the direct re-check
+
+### Changed
+
+* Removed the per-model exclusion memo in `AuditableAttributes` — its fingerprint serialised every attribute value per lookup (throwing on Closure attributes); exclusions are computed fresh per lookup and once per `filter()` call, and the internal `forgetExcluded()` helper was removed with it (deferred from the v0.0.12 review)
+
+### Added
+
+* README section "Upgrade notes / owen-it versions": documents the owen-it/laravel-auditing console behaviour change between 14.0.3 and 14.0.7 (upstream PR #1050 — `bootAuditable()` registers the observer on `audit.enabled` alone, so in console the observer fires even with `audit.console=false`, while its dispatch still re-checks `isAuditingEnabled()` and records no rows), what consumers should check (`audit.console`, queue workers, test suites) and how to restore the old behaviour (pin exactly `14.0.3` or `>=14.0.3 <14.0.4`, not a tilde range, which also allows 14.0.4 to 14.0.7; pinning gives up later 14.0.x fixes). The 14.0.7 behaviour is verified against the installed package (14.0.4 to 14.0.6 were not checked individually); the 14.0.3 behaviour is read from the upstream v14.0.3 source (`src/Auditable.php:80`, `:552-559`) and was not run. The `^14.0` constraint is kept because the package uses no 14.0.4-only API; a new test pins what the UI sees for both `audit.console` values — the recorded rows and the rendered timeline only, no owen-it internals — and runs against the installed 14.0.7 (reported by MIS, issue I-0006)
+
 ## v0.0.12 - 2026-11-18
 
 ### Security

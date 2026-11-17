@@ -11,7 +11,6 @@ use OwenIt\Auditing\Contracts\Audit as AuditContract;
 use OwenIt\Auditing\Contracts\Auditable as AuditableContract;
 use OwenIt\Auditing\Exceptions\AuditableTransitionException;
 use UnitEnum;
-use WeakMap;
 
 /**
  * Applies an auditable model's CURRENT owen-it/laravel-auditing rules to the
@@ -47,18 +46,6 @@ use WeakMap;
 final class AuditableAttributes
 {
     /**
-     * Memoised exclusion lists, per model instance. A timeline renders the
-     * SAME eagerly loaded auditable for many audit rows, so the rules are
-     * computed once per instance instead of once per row. The stamp (the
-     * model's current attributes plus the rule inputs) invalidates the entry
-     * whenever anything the rules depend on changes, `transitionTo()`
-     * included — {@see transition()} also clears it explicitly.
-     *
-     * @var WeakMap<Model, array{stamp: string, excluded: array<int, string>}>|null
-     */
-    private static ?WeakMap $excludedCache = null;
-
-    /**
      * The audit model's created-at column, null-safe: null when the model
      * reports no timestamp column at all (`const CREATED_AT = null`).
      */
@@ -74,6 +61,12 @@ final class AuditableAttributes
      * mode visible allowlist is not enumerable (it excludes everything not in
      * the list), so it is enforced per attribute in {@see isAuditable()}.
      *
+     * The rules are computed FRESH on every call — never memoised: a
+     * fingerprint of the model's state would have to serialise every
+     * attribute value (which throws on Closures) on every single lookup,
+     * making the memo more expensive than the rules it caches. Callers that
+     * ask per attribute must compute once themselves — {@see filter()} does.
+     *
      * @return array<int, string>
      */
     public static function excluded(Model $model): array
@@ -82,24 +75,12 @@ final class AuditableAttributes
             return [];
         }
 
-        $cache = self::$excludedCache ??= new WeakMap;
-
-        $stamp = self::exclusionStamp($model);
-
-        if (isset($cache[$model]) && $cache[$model]['stamp'] === $stamp) {
-            return $cache[$model]['excluded'];
-        }
-
-        $excluded = self::computeExcluded($model);
-
-        $cache[$model] = ['stamp' => $stamp, 'excluded' => $excluded];
-
-        return $excluded;
+        return self::computeExcluded($model);
     }
 
     /**
      * The exclusion rules themselves, mirrored from owen-it (see the class
-     * docblock). Only ever called through {@see excluded()}, which memoises.
+     * docblock).
      *
      * @return array<int, string>
      */
@@ -146,38 +127,6 @@ final class AuditableAttributes
     }
 
     /**
-     * Everything the exclusion rules read, in one comparable fingerprint: when
-     * it is unchanged, the memoised list is still correct. `transitionTo()`
-     * changes the model's attributes, so it invalidates by itself.
-     *
-     * @return non-falsy-string
-     */
-    private static function exclusionStamp(AuditableContract & Model $model): string
-    {
-        return md5(serialize([
-            $model->getAttributes(),
-            $model->getAuditExclude(),
-            $model->getAuditInclude(),
-            $model->getAuditStrict(),
-            $model->getAuditTimestamps(),
-            $model->getHidden(),
-            $model->getVisible(),
-            config('audit.exclude'),
-            config('audit.allowed_array_values'),
-        ]));
-    }
-
-    /**
-     * Forget the memoised exclusions of one model (used around a transition).
-     */
-    public static function forgetExcluded(Model $model): void
-    {
-        if (self::$excludedCache !== null) {
-            unset(self::$excludedCache[$model]);
-        }
-    }
-
-    /**
      * Whether the attribute is auditable under the model's current rules.
      * Models that are not owen-it auditables are not restricted.
      */
@@ -187,7 +136,17 @@ final class AuditableAttributes
             return true;
         }
 
-        if (in_array($attribute, self::excluded($model), true)) {
+        return self::isAuditableAgainst($model, self::excluded($model), $attribute);
+    }
+
+    /**
+     * The per-attribute rules {@see isAuditable()} applies, shared with
+     * {@see filter()} so both answer exactly the same question against one
+     * precomputed exclusion list.
+     */
+    private static function isAuditableAgainst(AuditableContract & Model $model, array $excluded, string $attribute): bool
+    {
+        if (in_array($attribute, $excluded, true)) {
             return false;
         }
 
@@ -209,14 +168,23 @@ final class AuditableAttributes
     /**
      * Drop every key the model's current rules do not allow.
      *
+     * The exclusion rules are computed ONCE per call and reused for every
+     * key — one rule set per filter, however many attributes it screens.
+     *
      * @param  array<string, mixed>  $values  attribute => anything
      * @return array<string, mixed>
      */
     public static function filter(Model $model, array $values): array
     {
+        if (! $model instanceof AuditableContract) {
+            return $values;
+        }
+
+        $excluded = self::excluded($model);
+
         return array_filter(
             $values,
-            fn (string | int $attribute): bool => self::isAuditable($model, (string) $attribute),
+            fn (string | int $attribute): bool => self::isAuditableAgainst($model, $excluded, (string) $attribute),
             ARRAY_FILTER_USE_KEY,
         );
     }
@@ -349,10 +317,6 @@ final class AuditableAttributes
             throw new InvalidArgumentException('The model must be an owen-it auditable.');
         }
 
-        // The transition changes the model's attributes, so the memoised
-        // exclusions are stale on both sides of `transitionTo()`.
-        self::forgetExcluded($model);
-
         $model->transitionTo(self::filteredCopy($model, $audit), $old);
 
         $protected = self::protectedDirtyAttributes($model);
@@ -364,8 +328,6 @@ final class AuditableAttributes
             // floor this package's dependencies allow, as `filament/filament`
             // ^5.11 already requires laravel/framework ^11.44.
             $model->discardChanges();
-
-            self::forgetExcluded($model);
 
             throw new ProtectedAttributeTransitionException(sprintf(
                 'Applying this audit would also modify the protected attribute(s) [%s], so it was refused and nothing was saved.',

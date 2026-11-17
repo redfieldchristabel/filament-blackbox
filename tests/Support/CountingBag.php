@@ -7,9 +7,8 @@ use OwenIt\Auditing\Contracts\Auditable;
 /**
  * An ArrayBag that counts how often the exclusion rules are COMPUTED:
  * `getCreatedAtColumn()` is only read while the timestamp opt-out is applied
- * inside the rule computation — never on a memo hit (the stamp re-fingerprints
- * OTHER rule inputs, but never this one) — so its call count proves cache hits
- * and recomputations.
+ * inside the rule computation — never while the precomputed list is reused —
+ * so its call count proves how many rule computations a lookup path made.
  */
 class CountingBag extends ArrayBag implements Auditable
 {
