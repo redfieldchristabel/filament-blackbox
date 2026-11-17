@@ -2,6 +2,22 @@
 
 All notable changes to `filament-blackbox` will be documented in this file.
 
+## Unreleased
+
+### Changed
+
+* Support Filament v5.11 (`filament/filament` constraint raised to `^5.11`)
+
+### Added
+
+* Integration tests that render the Blackbox audit page (including event and user filters) and open the Blackbox slide-over action for an audited record under Filament 5.11
+
+### Fixed
+
+* Dev Docker image: clear the base image entrypoint (it ran `php artisan optimize`, which does not exist in a package) and install `pcov` so `pest` no longer exits 1 on "No code coverage driver available"
+* phpstan: drop a redundant `?? []` on the non-nullable `Blackbox::$data` property
+* Pint: import `Livewire` and `Audit` instead of using inline fully qualified names
+
 ## v0.0.10 - 2026-02-20
 
 ### What's Changed

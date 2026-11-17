@@ -9,6 +9,8 @@
 
 A professional-grade auditing UI for Filament PHP. Transform raw laravel-auditing data into a powerful, centralized 'Blackbox' flight recorder with beautiful diffs, relationship-aware timelines, and advanced filtering.
 
+Supports Filament 5.11 and later releases within the 5.x major (`filament/filament: ^5.11`).
+
 ## Installation
 
 You can install the package via composer:
@@ -18,7 +20,7 @@ composer require redfieldchristabel/filament-blackbox
 ```
 
 > [!IMPORTANT]
-> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/4.x/styling/overview#creating-a-custom-theme) first.
+> If you have not set up a custom theme and are using Filament Panels follow the instructions in the [Filament Docs](https://filamentphp.com/docs/5.x/styling/overview#creating-a-custom-theme) first.
 
 After setting up a custom theme add the plugin's views to your theme css file or your app's css file if using the standalone packages. This is the recommended way to use the package and the default configuration.
 

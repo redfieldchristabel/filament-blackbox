@@ -119,7 +119,7 @@ class Blackbox extends Page implements HasActions, HasSchemas
     {
         // Simply call the service class
         return app(FilamentBlackbox::class)->getAudits(
-            filters: $this->data ?? [],
+            filters: $this->data,
             perPage: $this->perPage
         );
     }

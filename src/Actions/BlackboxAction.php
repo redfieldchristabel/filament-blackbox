@@ -6,6 +6,7 @@ use Filament\Actions\Action;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
+use Livewire\Livewire;
 
 class BlackboxAction extends Action
 {
@@ -27,7 +28,7 @@ class BlackboxAction extends Action
         // ]));
 
         $this->modalContent(fn (Model $record) => new HtmlString(
-            \Livewire\Livewire::mount('blackbox::blackbox-slideover', ['record' => $record])
+            Livewire::mount('blackbox::blackbox-slideover', ['record' => $record])
         ));
 
         $this->label('Blackbox');

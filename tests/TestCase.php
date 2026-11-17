@@ -3,6 +3,8 @@
 namespace Blackbox\FilamentBlackbox\Tests;
 
 use Blackbox\FilamentBlackbox\FilamentBlackboxServiceProvider;
+use Blackbox\FilamentBlackbox\Tests\Support\TestPanelProvider;
+use Blackbox\FilamentBlackbox\Tests\Support\User;
 use BladeUI\Heroicons\BladeHeroiconsServiceProvider;
 use BladeUI\Icons\BladeIconsServiceProvider;
 use Filament\Actions\ActionsServiceProvider;
@@ -15,10 +17,13 @@ use Filament\Support\SupportServiceProvider;
 use Filament\Tables\TablesServiceProvider;
 use Filament\Widgets\WidgetsServiceProvider;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\LazilyRefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\Concerns\WithWorkbench;
 use Orchestra\Testbench\TestCase as Orchestra;
+use OwenIt\Auditing\AuditingServiceProvider;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 
 class TestCase extends Orchestra
@@ -52,6 +57,8 @@ class TestCase extends Orchestra
             TablesServiceProvider::class,
             WidgetsServiceProvider::class,
             FilamentBlackboxServiceProvider::class,
+            AuditingServiceProvider::class,
+            TestPanelProvider::class,
         ];
 
         sort($providers);
@@ -62,10 +69,31 @@ class TestCase extends Orchestra
     public function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'testing');
+        $app['config']->set('app.key', 'base64:' . base64_encode(str_repeat('a', 32)));
+        $app['config']->set('auth.providers.users.model', User::class);
+        // laravel-auditing skips console requests by default, and tests run in the console.
+        $app['config']->set('audit.console', true);
     }
 
     protected function defineDatabaseMigrations(): void
     {
         $this->loadMigrationsFrom(__DIR__ . '/../database/migrations');
+
+        // A dedicated table: Testbench's skeleton ships its own `users` migration.
+        Schema::create('test_users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->string('password');
+            $table->timestamps();
+        });
+
+        Schema::create('audited_posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('title');
+            $table->timestamps();
+        });
+
+        (require __DIR__ . '/../vendor/owen-it/laravel-auditing/database/migrations/audits.stub')->up();
     }
 }

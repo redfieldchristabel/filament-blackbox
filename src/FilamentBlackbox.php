@@ -13,7 +13,7 @@ class FilamentBlackbox
     public function getAudits(array $filters = [], int $perPage = 10): CursorPaginator
     {
         // Get the configured audit model class from the audit package
-        $auditModel = config('audit.implementation', \OwenIt\Auditing\Models\Audit::class);
+        $auditModel = config('audit.implementation', Audit::class);
 
         // Start the query using the resolved class
         $query = $auditModel::query()->with(['user', 'auditable']);
